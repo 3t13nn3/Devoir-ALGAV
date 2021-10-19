@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 // Handling big int
@@ -22,14 +23,14 @@ struct node {
 };
 
 Node *newNode();
-Node *insert(Node *initTree, Node *treeToAdd);
+Node *insert(Node *&initTree, Node *treeToAdd);
 int getTreeHeightFromWidth(int width);
-void createTreeFromTable(Node *tree, int height, std::string &table);
-Node *consArbre(std::string table);
+void createTreeFromTable(Node *&tree, int height, std::string &table);
+Node *consArbre(std::string &table);
 void freeAllChildren(Node *&n);
-void printAllChildren(int indentation, Node *n);
-void luka(Node *n);
-void defineInDot(Node *n, int height, std::ofstream &f);
-void dot(Node *t);
-void linkInDot(Node *n, std::ofstream &f);
+void printAllChildren(int indentation, Node *&n);
+void luka(Node *&n);
+void defineInDot(Node *&n, int height, std::ofstream &f);
+void dot(Node *&t);
+void linkInDot(Node *&n, std::ofstream &f, std::unordered_set<Node *> &marked);
 void compress(Node *&n);
