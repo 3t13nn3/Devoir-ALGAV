@@ -17,7 +17,9 @@ int main(int argc, char **argv) {
   std::cout << "Actual number is : " << number << std::endl;
 
   // 1<<3 == 2^3 but faster; 1<<n == 2^n;
-  std::string tableOfTruth = table(number, 1 << 6);
+  // FIX FOR EXEMPLE 201, IF BOTH CHILD GOING TO THE SAME, DEL IT
+  // https://en.wikipedia.org/wiki/Binary_decision_diagram
+  std::string tableOfTruth = table(number, 1 << 3);
 
   // Printing our table of truth
   for (const auto &e : tableOfTruth) {
