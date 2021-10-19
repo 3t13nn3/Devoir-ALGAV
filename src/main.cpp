@@ -34,6 +34,7 @@ int main(int argc, char **argv) {
   std::cout << "Compressing" << std::endl;
 
   compress(tree);
+
   std::cout << "Creating graph with dot" << std::endl;
 
   dot(tree);

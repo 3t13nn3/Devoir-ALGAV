@@ -9,8 +9,8 @@ Node *newNode() {
 
   Node *toReturn = new Node;
 
-  toReturn->_leftChild = NULL;
-  toReturn->_rightChild = NULL;
+  toReturn->_leftChild = nullptr;
+  toReturn->_rightChild = nullptr;
   toReturn->_value = "";
 
   return toReturn;
@@ -84,7 +84,7 @@ Node *consArbre(std::string table) {
 arg: 0 Root node
 Free all the children of a given node
 */
-void freeAllChildren(Node *n) {
+void freeAllChildren(Node *&n) {
 
   if (n == nullptr) {
     return;
@@ -94,10 +94,12 @@ void freeAllChildren(Node *n) {
 
   freeAllChildren(n->_rightChild);
 
-  n->_leftChild = nullptr;
-  n->_rightChild = nullptr;
+  n = nullptr;
 
-  delete n;
+  if (n == nullptr) { // needed because a same node could be deleted and we
+                      // don't want this
+    delete n;
+  }
 }
 
 /*
@@ -126,6 +128,12 @@ void printAllChildren(int stage, Node *n) {
 void luka(Node *n) {
 
   if (n->_leftChild == nullptr) {
+    if (_words.find(n->_value) == _words.end()) {
+      // not found
+      _words[n->_value] = n;
+      std::cout << n->_value << std::endl;
+    }
+
     return;
   }
 
@@ -140,26 +148,54 @@ void luka(Node *n) {
   if (_words.find(n->_value) == _words.end()) {
     // not found
     _words[n->_value] = n;
+    std::cout << n->_value << std::endl;
   }
 }
 
-void compress(Node *n) {
+void compress(Node *&n) {
   if (n == nullptr) {
     return;
   }
 
+  /*
+    if (n->_leftChild != nullptr) {
+      if (n->_leftChild != _words[n->_leftChild->_value]) {
+        freeAllChildren(n->_leftChild);
+        //   delete n->_leftChild;
+        // n->_leftChild = new Node;
+        insert(n, _words[n->_leftChild->_value]);
+      }
+    }
+    if (n->_rightChild != nullptr) {
+      if (n->_rightChild != _words[n->_rightChild->_value]) {
+        // freeAllChildren(n->_rightChild);
+        //   delete n->_rightChild;
+        // n->_leftChild = new Node;
+        n->_rightChild = _words[n->_rightChild->_value];
+      }
+    }
+  */
   compress(n->_leftChild);
 
   compress(n->_rightChild);
 
   if (n != _words[n->_value]) {
-    freeAllChildren(n);
-    n = newNode();
-    /*n->_leftChild = _words[n->_value]->_leftChild;
-    n->_rightChild = _words[n->_value]->_rightChild;
-    n->_value = _words[n->_value]->_value;*/
+    // std::cout << (_words[n->_value])->_value << std::endl;
+
     n = _words[n->_value];
+    n->_leftChild = nullptr;
+    n->_rightChild = nullptr;
+    /*freeAllChildren(n->_leftChild);
+    freeAllChildren(n->_rightChild);*/
   }
+  /*
+    if (n != _words[n->_value]) {
+      // std::cout << (_words[n->_value])->_value << std::endl;
+
+      freeAllChildren(n);
+
+      // n = _words[n->_value];
+    }*/
 }
 
 void defineInDot(Node *n, int height, std::ofstream &f) {
@@ -184,7 +220,7 @@ void defineInDot(Node *n, int height, std::ofstream &f) {
 
 void linkInDot(Node *n, std::ofstream &f) {
 
-  if (n->_leftChild == nullptr && n->_rightChild == nullptr) {
+  if (n == nullptr) {
     return;
   }
 
@@ -226,9 +262,9 @@ void linkInDot(Node *n, std::ofstream &f) {
 void dot(Node *t) {
   // exemple:
   // digraph{a->bb[style=dashed];b[label=\"som1\"];b->c[labal="som1"];a->c;d->c;e->c;e->a;}
-  for (auto e : _words) {
-    std::cout << e.first << std::endl;
-  }
+  /*for (auto e : _words) {
+     std::cout << e.first << std::endl;
+   }*/
 
   system("mkdir ../tree");
   std::ofstream dotFile("../tree/tree.dot");
@@ -248,7 +284,8 @@ void dot(Node *t) {
     dotFile.close();
   }
 
-  std::cout << "using dot -Tsvg -o tree/tree.svg tree/tree.dot" << std::endl;
+  std::cout << "using dot -Tsvg -o ../tree/tree.svg ../tree/tree.dot"
+            << std::endl;
 
   // creating tree image
   system("dot -Tsvg -o ../tree/tree.svg ../tree/tree.dot");
