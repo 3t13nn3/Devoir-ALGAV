@@ -1,48 +1,47 @@
 #include "head.h"
 
-int main (int argc, char **argv) {
+int main(int argc, char **argv) {
 
-    std::string input = "";
+  std::string input = "";
 
-    if (argc == 2) {
-        input = argv[1];
-	} else {
-        //by default the exemple in the subject
-		input = "38";
-	}
+  if (argc == 2) {
+    input = argv[1];
+  } else {
+    // by default the exemple in the subject
+    input = "38";
+  }
 
-    //We creating our number from our string in base 10
-    mpz_class number(input, 10);
+  // We creating our number from our string in base 10
+  mpz_class number(input, 10);
 
-    std::cout << "Actual number is : " << number << std::endl;
+  std::cout << "Actual number is : " << number << std::endl;
 
-    //1<<3 == 2^3 but faster; 1<<n == 2^n;
-    std::string tableOfTruth = table(number, 1<<3);
+  // 1<<3 == 2^3 but faster; 1<<n == 2^n;
+  std::string tableOfTruth = table(number, 1 << 3);
 
-    //Printing our table of truth
-    for(const auto & e : tableOfTruth) {
-        std::cout << e << " ";
-    }
-    std::cout << std::endl;
+  // Printing our table of truth
+  for (const auto &e : tableOfTruth) {
+    std::cout << e << " ";
+  }
+  std::cout << std::endl;
 
-    Node* tree = consArbre(tableOfTruth);
+  Node *tree = consArbre(tableOfTruth);
 
+  std::cout << "Applying Luka" << std::endl;
 
+  luka(tree);
 
-    std::cout << "Applying Luka" << std::endl;
+  std::cout << "Compressing" << std::endl;
 
-	luka(tree);
+  compress(tree);
+  std::cout << "Creating graph with dot" << std::endl;
 
-    std::cout << "Compressing" << std::endl;
+  dot(tree);
 
-	//t.Compress()
-    std::cout << "Creating graph with dot" << std::endl;
+  // printAllChildren(0, tree);
+  printAllChildren(0, tree);
+  // Always free after using the tree
+  freeAllChildren(tree);
 
-	dot(tree);
-
-    printAllChildren(0,tree);
-    //Always free after using the tree
-    freeAllChildren(tree);
-
-    exit(0);
+  exit(0);
 }
