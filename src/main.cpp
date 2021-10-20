@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
   }
   std::cout << std::endl;
 
-  Node *tree = consArbre(tableOfTruth);
+  std::shared_ptr<Node> tree = consArbre(tableOfTruth);
 
   std::cout << "Applying Luka" << std::endl;
 
@@ -39,12 +39,12 @@ int main(int argc, char **argv) {
 
   std::cout << "Creating graph with dot" << std::endl;
 
-  dot(tree);
+  dot(tree, true);
 
-  // printAllChildren(0, tree);
   printAllChildren(0, tree);
+  //printAllChildren(0, tree);
   // Always free after using the tree
-  freeAllChildren(tree);
+  //freeAllChildren(tree);
 
   exit(0);
 }
