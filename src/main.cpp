@@ -42,9 +42,9 @@ int main(int argc, char **argv) {
   dot(tree, true);
 
   printAllChildren(0, tree);
-  //printAllChildren(0, tree);
+  // printAllChildren(0, tree);
   // Always free after using the tree
-  //freeAllChildren(tree);
+  // freeAllChildren(tree);
 
   exit(0);
 }

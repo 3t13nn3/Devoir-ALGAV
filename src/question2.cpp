@@ -1,6 +1,6 @@
 #include "head.h"
 
-std::unordered_map<std::string, std::shared_ptr<Node> > _words;
+std::unordered_map<std::string, std::shared_ptr<Node>> _words;
 
 /*
 Creating a new empty node
@@ -20,7 +20,8 @@ std::shared_ptr<Node> newNode() {
 arg: 0 Initial Tree, 1 Tree to add
 Insert a Tree in the Parents childrens
 */
-std::shared_ptr<Node> insert(std::shared_ptr<Node> &initTree, std::shared_ptr<Node> treeToAdd) {
+std::shared_ptr<Node> insert(std::shared_ptr<Node> &initTree,
+                             std::shared_ptr<Node> treeToAdd) {
 
   if (initTree->_leftChild == nullptr) {
     initTree->_leftChild = treeToAdd;
@@ -51,7 +52,8 @@ arg: 0 Initial Tree, 1 Height of the tree, 2 table of truth
 Create a Tree of a Height "height", based on DFS, putting the table of truth
 value at leafs
 */
-void createTreeFromTable(std::shared_ptr<Node> &tree, int height, std::string &table) {
+void createTreeFromTable(std::shared_ptr<Node> &tree, int height,
+                         std::string &table) {
 
   if (height == 0) {
     tree->_value = table[0];
@@ -172,7 +174,8 @@ void compress(std::shared_ptr<Node> &n) {
   }
 }
 
-void defineInDot(std::shared_ptr<Node> &n, int height, std::ofstream &f, bool withWords) {
+void defineInDot(std::shared_ptr<Node> &n, int height, std::ofstream &f,
+                 bool withWords) {
 
   if (n.get() == nullptr) {
     return;
@@ -185,23 +188,26 @@ void defineInDot(std::shared_ptr<Node> &n, int height, std::ofstream &f, bool wi
   name = "_" + name + "_";
 
   std::string toWrite = "";
-  if(withWords) {
-    toWrite = name + "[label=\"x" + std::to_string(height) + " [" + n->_value + "]\"];";
+  if (withWords) {
+    toWrite = name + "[label=\"x" + std::to_string(height) + " [" + n->_value +
+              "]\"];";
   } else {
-    if(n->_leftChild.get() == nullptr && n->_rightChild.get() == nullptr) {
-      toWrite = name + "[label=\"x" + std::to_string(height) + " [" + n->_value + "]\"];";
+    if (n->_leftChild.get() == nullptr && n->_rightChild.get() == nullptr) {
+      toWrite = name + "[label=\"x" + std::to_string(height) + " [" +
+                n->_value + "]\"];";
     } else {
       toWrite = name + "[label=\"x" + std::to_string(height) + "\"];";
     }
   }
-      
+
   f << toWrite;
   defineInDot(n->_leftChild, height - 1, f, withWords);
 
   defineInDot(n->_rightChild, height - 1, f, withWords);
 }
 
-void linkInDot(std::shared_ptr<Node> &n, std::ofstream &f, std::unordered_set<std::shared_ptr<Node> > &marked) {
+void linkInDot(std::shared_ptr<Node> &n, std::ofstream &f,
+               std::unordered_set<std::shared_ptr<Node>> &marked) {
 
   if (n.get() == nullptr) {
     return;
@@ -257,7 +263,7 @@ void dot(std::shared_ptr<Node> &t, bool withWords) {
   system("mkdir ../tree");
   std::ofstream dotFile("../tree/tree.dot");
 
-  std::unordered_set<std::shared_ptr<Node> > marked;
+  std::unordered_set<std::shared_ptr<Node>> marked;
 
   if (dotFile.is_open()) {
 
