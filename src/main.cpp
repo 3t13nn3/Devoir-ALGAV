@@ -19,6 +19,7 @@ int main(int argc, char **argv) {
   // 1<<3 == 2^3 but faster; 1<<n == 2^n;
   // FIX FOR EXEMPLE 201, IF BOTH CHILD GOING TO THE SAME, DEL IT
   // https://en.wikipedia.org/wiki/Binary_decision_diagram
+  
   std::string tableOfTruth = table(number, 1 << 3);
 
   // Printing our table of truth
@@ -42,9 +43,9 @@ int main(int argc, char **argv) {
   dot(tree, true);
 
   printAllChildren(0, tree);
-  // printAllChildren(0, tree);
+  //printAllChildren(0, tree);
   // Always free after using the tree
-  // freeAllChildren(tree);
+  //freeAllChildren(tree);
 
   exit(0);
 }

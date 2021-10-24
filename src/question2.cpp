@@ -131,7 +131,9 @@ void printAllChildren(int stage, std::shared_ptr<Node> &n) {
 
 void luka(std::shared_ptr<Node> &n) {
 
+  // If we are on leafs
   if (n->_leftChild.get() == nullptr) {
+
     if (_words.find(n->_value) == _words.end()) {
       // not found
       _words[n->_value] = n;
@@ -157,6 +159,7 @@ void luka(std::shared_ptr<Node> &n) {
 }
 
 void compress(std::shared_ptr<Node> &n) {
+
   if (n.get() == nullptr) {
     return;
   }
@@ -174,6 +177,7 @@ void compress(std::shared_ptr<Node> &n) {
   }
 }
 
+//Use luka as identifiant
 void defineInDot(std::shared_ptr<Node> &n, int height, std::ofstream &f,
                  bool withWords) {
 
