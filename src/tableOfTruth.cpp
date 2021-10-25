@@ -1,6 +1,6 @@
-#include "tableOfTruth.hpp"
+#include "TableOfTruth.hpp"
 
-using namespace Devoir;
+using namespace ex1;
 
 TableOfTruth::TableOfTruth() {}
 

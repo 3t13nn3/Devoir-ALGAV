@@ -1,59 +1,16 @@
-#include "head.h"
+#include "Tree.hpp"
 
-std::unordered_map<std::string, std::shared_ptr<Node>> _words;
+using namespace ex2;
 
-/*
-Creating a new empty node
-*/
-std::shared_ptr<Node> newNode() {
-
-  std::shared_ptr<Node> toReturn = std::make_shared<Node>();
-
-  toReturn->_leftChild = nullptr;
-  toReturn->_rightChild = nullptr;
-  toReturn->_value = "";
-
-  return toReturn;
-}
-
-/*
-arg: 0 Initial Tree, 1 Tree to add
-Insert a Tree in the Parents childrens
-*/
-std::shared_ptr<Node> insert(std::shared_ptr<Node> &initTree,
-                             std::shared_ptr<Node> treeToAdd) {
-
-  if (initTree->_leftChild == nullptr) {
-    initTree->_leftChild = treeToAdd;
-  } else {
-    initTree->_rightChild = treeToAdd;
-  }
-
-  return treeToAdd;
-}
-
-/*
-arg: 0 width of the tree (length of the table of truth generaly)
-return the height of the tree
-*/
-int getTreeHeightFromWidth(int width) {
-  int power = 1;
-
-  // power is the size of our tree (pow of 2)
-  while (1 << power < width) {
-    power++;
-  }
-
-  return power;
-}
+Tree::Tree() { _root = newNode(); }
 
 /*
 arg: 0 Initial Tree, 1 Height of the tree, 2 table of truth
 Create a Tree of a Height "height", based on DFS, putting the table of truth
 value at leafs
 */
-void createTreeFromTable(std::shared_ptr<Node> &tree, int height,
-                         std::string &table) {
+void Tree::createTreeFromTable(std::shared_ptr<Node> &tree, int height,
+                               std::string &table) {
 
   if (height == 0) {
     tree->_value = table[0];
@@ -74,12 +31,8 @@ void createTreeFromTable(std::shared_ptr<Node> &tree, int height,
 arg: 0 table of truth
 Create a Tree of a certain height in function of the table of truth
 */
-std::shared_ptr<Node> consArbre(std::string &table) {
-  std::shared_ptr<Node> t = newNode();
-
-  createTreeFromTable(t, getTreeHeightFromWidth(table.size()), table);
-
-  return t;
+void Tree::ConsArbre(std::string &table) {
+  createTreeFromTable(_root, getTreeHeightFromWidth(table.size()), table);
 }
 
 /*
@@ -107,18 +60,18 @@ void freeAllChildren(std::shared_ptr<Node> &n) {
 */
 
 /*
-arg: 0 stage of the node (call it with 0, a root is alaways as 0), 1 the root
+arg: 0 the root, 1 stage of the node (call it with 0, a root is always as 0)
 Print all the children of a given node
 */
-void printAllChildren(int stage, std::shared_ptr<Node> &n) {
+void Tree::printAllChildrenAux(std::shared_ptr<Node> &n, int stage) {
 
   if (n.get() == nullptr) {
     return;
   }
 
-  printAllChildren(stage + 1, n->_leftChild);
+  printAllChildrenAux(n->_leftChild, stage + 1);
 
-  printAllChildren(stage + 1, n->_rightChild);
+  printAllChildrenAux(n->_rightChild, stage + 1);
 
   int i;
   for (i = 0; i < stage; i++) {
@@ -129,7 +82,16 @@ void printAllChildren(int stage, std::shared_ptr<Node> &n) {
   std::cout << n->_value << std::endl;
 }
 
-void luka(std::shared_ptr<Node> &n) {
+// Calling aux function to avoid problemes on recursion with the reference of a
+// class member
+void Tree::PrintAllChildren() { printAllChildrenAux(_root); }
+
+/*
+arg: 0 Node to applied luka function (the root generaly)
+Assign a Luka's word for each node and fill our _words map with the nodes we
+browse. Based on BFS.
+*/
+void Tree::lukaAux(std::shared_ptr<Node> &n) {
 
   // If we are on leafs
   if (n->_leftChild.get() == nullptr) {
@@ -137,15 +99,15 @@ void luka(std::shared_ptr<Node> &n) {
     if (_words.find(n->_value) == _words.end()) {
       // not found
       _words[n->_value] = n;
-      std::cout << n->_value << std::endl;
+      // std::cout << n->_value << std::endl;
     }
 
     return;
   }
 
-  luka(n->_leftChild);
+  lukaAux(n->_leftChild);
 
-  luka(n->_rightChild);
+  lukaAux(n->_rightChild);
 
   n->_value = n->_leftChild->_value + n->_rightChild->_value;
 
@@ -154,19 +116,29 @@ void luka(std::shared_ptr<Node> &n) {
   if (_words.find(n->_value) == _words.end()) {
     // not found
     _words[n->_value] = n;
-    std::cout << n->_value << std::endl;
+    // std::cout << n->_value << std::endl;
   }
 }
 
-void compress(std::shared_ptr<Node> &n) {
+// Calling aux function to avoid problemes on recursion with the reference of a
+// class member
+void Tree::Luka() { lukaAux(_root); }
+
+/*
+arg: 0 Node to applied compress function (the root generaly)
+Check for each node the associate node of the current Luka's word in our map
+(_words). If nodes aren't the same, we assign the node in the map to the current
+node. Based on BFS.
+*/
+void Tree::compressAux(std::shared_ptr<Node> &n) {
 
   if (n.get() == nullptr) {
     return;
   }
 
-  compress(n->_leftChild);
+  compressAux(n->_leftChild);
 
-  compress(n->_rightChild);
+  compressAux(n->_rightChild);
 
   if (n != _words[n->_value]) {
 
@@ -177,9 +149,18 @@ void compress(std::shared_ptr<Node> &n) {
   }
 }
 
-//Use luka as identifiant
-void defineInDot(std::shared_ptr<Node> &n, int height, std::ofstream &f,
-                 bool withWords) {
+// Calling aux function to avoid problemes on recursion with the reference of a
+// class member
+void Tree::Compress() { compressAux(_root); }
+
+/*
+arg: 0 Initial Node, 1 Height of the tree, 2 stream to the file we are writting,
+3 boolean to indicate if we want to put luka's word as label
+Define all nodes in our dot file with the adresse of each node. We are labelling
+them with the current height of a node.
+*/
+void Tree::defineInDot(std::shared_ptr<Node> &n, int height, std::ofstream &f,
+                       bool withWords) {
 
   if (n.get() == nullptr) {
     return;
@@ -210,8 +191,15 @@ void defineInDot(std::shared_ptr<Node> &n, int height, std::ofstream &f,
   defineInDot(n->_rightChild, height - 1, f, withWords);
 }
 
-void linkInDot(std::shared_ptr<Node> &n, std::ofstream &f,
-               std::unordered_set<std::shared_ptr<Node>> &marked) {
+/*
+arg: 0 Initial Node, 1 stream to the file we are writting, 2 a set of nodes we
+have already process
+Link every nodes to theire child in the dot file. Based on
+nodes adresses. We need to check if we have already process a node to avoid
+multiple link.
+*/
+void Tree::linkInDot(std::shared_ptr<Node> &n, std::ofstream &f,
+                     std::unordered_set<std::shared_ptr<Node>> &marked) {
 
   if (n.get() == nullptr) {
     return;
@@ -257,12 +245,13 @@ void linkInDot(std::shared_ptr<Node> &n, std::ofstream &f,
   }
 }
 
-void dot(std::shared_ptr<Node> &t, bool withWords) {
+/*
+arg: 0 boolean to indicate if we want to put luka's word as label
+Fill the dot file by calling defineInDot() and linkInDot().
+*/
+void Tree::Dot(bool withWords) {
   // exemple:
   // digraph{a->bb[style=dashed];b[label=\"som1\"];b->c[labal="som1"];a->c;d->c;e->c;e->a;}
-  /*for (auto e : _words) {
-     std::cout << e.first << std::endl;
-   }*/
 
   system("mkdir ../tree");
   std::ofstream dotFile("../tree/tree.dot");
@@ -273,11 +262,11 @@ void dot(std::shared_ptr<Node> &t, bool withWords) {
 
     dotFile << "digraph{";
 
-    int height = getTreeHeightFromWidth(t->_value.size());
+    int height = getTreeHeightFromWidth(_root->_value.size());
 
-    defineInDot(t, height, dotFile, withWords);
+    defineInDot(_root, height, dotFile, withWords);
 
-    linkInDot(t, dotFile, marked);
+    linkInDot(_root, dotFile, marked);
 
     dotFile << "}";
 
@@ -289,4 +278,14 @@ void dot(std::shared_ptr<Node> &t, bool withWords) {
 
   // creating tree image
   system("dot -Tsvg -o ../tree/tree.svg ../tree/tree.dot");
+}
+
+/*
+Print the content of luka's map
+*/
+void Tree::PrintLukaMap() {
+  std::cout << "Luka's Map:" << std::endl;
+  for (const auto &e : _words) {
+    std::cout << e.first << std::endl;
+  }
 }

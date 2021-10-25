@@ -1,7 +1,6 @@
-#include "head.h"
-#include "tableOfTruth.hpp"
-
-using namespace Devoir;
+//#include "head.h"
+#include "TableOfTruth.hpp"
+#include "Tree.hpp"
 
 int main(int argc, char **argv) {
 
@@ -19,37 +18,35 @@ int main(int argc, char **argv) {
 
   std::cout << "Actual number is : " << number << std::endl;
 
+  // Question 1
+
+  ex1::TableOfTruth tof = ex1::TableOfTruth();
+
   // 1<<3 == 2^3 but faster; 1<<n == 2^n;
   // FIX FOR EXEMPLE 201, IF BOTH CHILD GOING TO THE SAME, DEL IT
   // https://en.wikipedia.org/wiki/Binary_decision_diagram
+  std::string tableOfTruth = tof.Table(number, 1 << 3);
 
-  TableOfTruth t = TableOfTruth();
-  std::string tableOfTruth = t.Table(number, 1 << 3);
+  std::cout << tableOfTruth << std::endl;
 
-  // Printing our table of truth
-  for (const auto &e : tableOfTruth) {
-    std::cout << e << " ";
-  }
-  std::cout << std::endl;
+  // Question 2
 
-  std::shared_ptr<Node> tree = consArbre(tableOfTruth);
+  ex2::Tree tree = ex2::Tree();
+
+  tree.ConsArbre(tableOfTruth);
 
   std::cout << "Applying Luka" << std::endl;
-
-  luka(tree);
+  tree.Luka();
 
   std::cout << "Compressing" << std::endl;
-
-  compress(tree);
+  tree.Compress();
 
   std::cout << "Creating graph with dot" << std::endl;
+  tree.Dot();
 
-  dot(tree, true);
+  tree.PrintAllChildren();
 
-  //printAllChildren(0, tree);
-  //printAllChildren(0, tree);
-  // Always free after using the tree
-  //freeAllChildren(tree);
+  tree.PrintLukaMap();
 
   exit(0);
 }

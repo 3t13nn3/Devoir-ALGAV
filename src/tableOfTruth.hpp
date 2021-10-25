@@ -6,7 +6,7 @@
 // Handling big int
 #include <gmpxx.h>
 
-namespace Devoir {
+namespace ex1 {
 class TableOfTruth {
 public:
   TableOfTruth();
