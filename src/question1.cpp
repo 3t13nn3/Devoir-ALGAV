@@ -21,14 +21,15 @@ std::string decomposition(const mpz_class &number) {
 }
 
 /*
-arg: 0 binary number under a vector<bool>, 1 final size of the vector
-Return the vector with the new size
+arg: 0 binary number under a string, 1 final size of the string
+Return the string with the new size
 */
 std::string completion(std::string &number, int finalSize) {
 
   int nSize = number.size();
 
   if (finalSize <= nSize) {
+                                        // - (nSize + finalSize)
     number = {number.begin(), number.end() + (finalSize - nSize)};
   } else {
     number.insert(number.end(), finalSize - nSize, '0');
