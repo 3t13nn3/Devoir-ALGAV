@@ -6,9 +6,9 @@
 
 typedef struct node Node;
 struct node {
-  std::string _value;
-  std::shared_ptr<Node> _leftChild;
-  std::shared_ptr<Node> _rightChild;
+    std::string _value;
+    std::shared_ptr<Node> _leftChild;
+    std::shared_ptr<Node> _rightChild;
 };
 
 std::shared_ptr<Node> newNode();

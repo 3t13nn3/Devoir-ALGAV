@@ -8,19 +8,18 @@
 
 namespace ex1 {
 class TableOfTruth {
-public:
-  TableOfTruth();
+   public:
+    TableOfTruth();
 
-  std::string Table(const mpz_class &x, int n);
+    std::string Table(const mpz_class &x, int n);
 
-private:
-  std::string _number;
+   private:
+    std::string _number;
 
-  void Decomposition(const mpz_class &number);
+    void Decomposition(const mpz_class &number);
 
-  void Completion(int finalSize);
-
+    void Completion(int finalSize);
 };
-} // namespace Devoir
+}  // namespace ex1
 
 #endif

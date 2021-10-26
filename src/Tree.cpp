@@ -11,20 +11,19 @@ value at leafs
 */
 void Tree::createTreeFromTable(std::shared_ptr<Node> &tree, int height,
                                std::string &table) {
+    if (height == 0) {
+        tree->_value = table[0];
 
-  if (height == 0) {
-    tree->_value = table[0];
+        // removing the first element from table
+        table.erase(0, 1);
+        return;
+    }
 
-    // removing the first element from table
-    table.erase(0, 1);
-    return;
-  }
+    insert(tree, newNode());
+    createTreeFromTable(tree->_leftChild, height - 1, table);
 
-  insert(tree, newNode());
-  createTreeFromTable(tree->_leftChild, height - 1, table);
-
-  insert(tree, newNode());
-  createTreeFromTable(tree->_rightChild, height - 1, table);
+    insert(tree, newNode());
+    createTreeFromTable(tree->_rightChild, height - 1, table);
 }
 
 /*
@@ -32,7 +31,7 @@ arg: 0 table of truth
 Create a Tree of a certain height in function of the table of truth
 */
 void Tree::ConsArbre(std::string &table) {
-  createTreeFromTable(_root, getTreeHeightFromWidth(table.size()), table);
+    createTreeFromTable(_root, getTreeHeightFromWidth(table.size()), table);
 }
 
 /*
@@ -64,22 +63,21 @@ arg: 0 the root, 1 stage of the node (call it with 0, a root is always as 0)
 Print all the children of a given node
 */
 void Tree::printAllChildrenAux(std::shared_ptr<Node> &n, int stage) {
+    if (n.get() == nullptr) {
+        return;
+    }
 
-  if (n.get() == nullptr) {
-    return;
-  }
+    printAllChildrenAux(n->_leftChild, stage + 1);
 
-  printAllChildrenAux(n->_leftChild, stage + 1);
+    printAllChildrenAux(n->_rightChild, stage + 1);
 
-  printAllChildrenAux(n->_rightChild, stage + 1);
-
-  int i;
-  for (i = 0; i < stage; i++) {
-    std::cout << "- - - -\t\t";
-  }
-  std::cout << "[" << stage << "]"
-            << "Node: ";
-  std::cout << n->_value << std::endl;
+    int i;
+    for (i = 0; i < stage; i++) {
+        std::cout << "- - - -\t\t";
+    }
+    std::cout << "[" << stage << "]"
+              << "Node: ";
+    std::cout << n->_value << std::endl;
 }
 
 // Calling aux function to avoid problemes on recursion with the reference of a
@@ -92,32 +90,30 @@ Assign a Luka's word for each node and fill our _words map with the nodes we
 browse. Based on BFS.
 */
 void Tree::lukaAux(std::shared_ptr<Node> &n) {
+    // If we are on leafs
+    if (n->_leftChild.get() == nullptr) {
+        if (_words.find(n->_value) == _words.end()) {
+            // not found
+            _words[n->_value] = n;
+            // std::cout << n->_value << std::endl;
+        }
 
-  // If we are on leafs
-  if (n->_leftChild.get() == nullptr) {
-
-    if (_words.find(n->_value) == _words.end()) {
-      // not found
-      _words[n->_value] = n;
-      // std::cout << n->_value << std::endl;
+        return;
     }
 
-    return;
-  }
+    lukaAux(n->_leftChild);
 
-  lukaAux(n->_leftChild);
+    lukaAux(n->_rightChild);
 
-  lukaAux(n->_rightChild);
+    n->_value = n->_leftChild->_value + n->_rightChild->_value;
 
-  n->_value = n->_leftChild->_value + n->_rightChild->_value;
-
-  // adding word to our map
-  //_words[n->_value] = n;
-  if (_words.find(n->_value) == _words.end()) {
-    // not found
-    _words[n->_value] = n;
-    // std::cout << n->_value << std::endl;
-  }
+    // adding word to our map
+    //_words[n->_value] = n;
+    if (_words.find(n->_value) == _words.end()) {
+        // not found
+        _words[n->_value] = n;
+        // std::cout << n->_value << std::endl;
+    }
 }
 
 // Calling aux function to avoid problemes on recursion with the reference of a
@@ -131,22 +127,20 @@ Check for each node the associate node of the current Luka's word in our map
 node. Based on BFS.
 */
 void Tree::compressAux(std::shared_ptr<Node> &n) {
+    if (n.get() == nullptr) {
+        return;
+    }
 
-  if (n.get() == nullptr) {
-    return;
-  }
+    compressAux(n->_leftChild);
 
-  compressAux(n->_leftChild);
+    compressAux(n->_rightChild);
 
-  compressAux(n->_rightChild);
+    if (n != _words[n->_value]) {
+        // freeAllChildren(n->_leftChild);
+        // freeAllChildren(n->_rightChild);
 
-  if (n != _words[n->_value]) {
-
-    // freeAllChildren(n->_leftChild);
-    // freeAllChildren(n->_rightChild);
-
-    n = _words[n->_value];
-  }
+        n = _words[n->_value];
+    }
 }
 
 // Calling aux function to avoid problemes on recursion with the reference of a
@@ -161,34 +155,33 @@ them with the current height of a node.
 */
 void Tree::defineInDot(std::shared_ptr<Node> &n, int height, std::ofstream &f,
                        bool withWords) {
-
-  if (n.get() == nullptr) {
-    return;
-  }
-
-  const void *address = static_cast<const void *>(n.get());
-  std::stringstream ss;
-  ss << address;
-  std::string name = ss.str();
-  name = "_" + name + "_";
-
-  std::string toWrite = "";
-  if (withWords) {
-    toWrite = name + "[label=\"x" + std::to_string(height) + " [" + n->_value +
-              "]\"];";
-  } else {
-    if (n->_leftChild.get() == nullptr && n->_rightChild.get() == nullptr) {
-      toWrite = name + "[label=\"x" + std::to_string(height) + " [" +
-                n->_value + "]\"];";
-    } else {
-      toWrite = name + "[label=\"x" + std::to_string(height) + "\"];";
+    if (n.get() == nullptr) {
+        return;
     }
-  }
 
-  f << toWrite;
-  defineInDot(n->_leftChild, height - 1, f, withWords);
+    const void *address = static_cast<const void *>(n.get());
+    std::stringstream ss;
+    ss << address;
+    std::string name = ss.str();
+    name = "_" + name + "_";
 
-  defineInDot(n->_rightChild, height - 1, f, withWords);
+    std::string toWrite = "";
+    if (withWords) {
+        toWrite = name + "[label=\"x" + std::to_string(height) + " [" + n->_value +
+                  "]\"];";
+    } else {
+        if (n->_leftChild.get() == nullptr && n->_rightChild.get() == nullptr) {
+            toWrite = name + "[label=\"x" + std::to_string(height) + " [" +
+                      n->_value + "]\"];";
+        } else {
+            toWrite = name + "[label=\"x" + std::to_string(height) + "\"];";
+        }
+    }
+
+    f << toWrite;
+    defineInDot(n->_leftChild, height - 1, f, withWords);
+
+    defineInDot(n->_rightChild, height - 1, f, withWords);
 }
 
 /*
@@ -200,49 +193,46 @@ multiple link.
 */
 void Tree::linkInDot(std::shared_ptr<Node> &n, std::ofstream &f,
                      std::unordered_set<std::shared_ptr<Node>> &marked) {
-
-  if (n.get() == nullptr) {
-    return;
-  }
-
-  if ((marked.find(n) != marked.end()) == false) { // if not in the set
-
-    marked.insert(n);
-
-    const void *address = static_cast<const void *>(n.get());
-    std::stringstream ss;
-    ss << address;
-    std::string father = ss.str();
-    father = "_" + father + "_";
-
-    if (n->_leftChild.get() != nullptr) {
-
-      const void *address = static_cast<const void *>(n->_leftChild.get());
-      std::stringstream ss;
-      ss << address;
-      std::string child = ss.str();
-      child = "_" + child + "_";
-
-      std::string toWrite = father + "->" + child + "[style=dashed];";
-      f << toWrite;
+    if (n.get() == nullptr) {
+        return;
     }
 
-    if (n->_rightChild.get() != nullptr) {
+    if ((marked.find(n) != marked.end()) == false) {  // if not in the set
 
-      const void *address = static_cast<const void *>(n->_rightChild.get());
-      std::stringstream ss;
-      ss << address;
-      std::string child = ss.str();
-      child = "_" + child + "_";
+        marked.insert(n);
 
-      std::string toWrite = father + "->" + child + ";";
-      f << toWrite;
+        const void *address = static_cast<const void *>(n.get());
+        std::stringstream ss;
+        ss << address;
+        std::string father = ss.str();
+        father = "_" + father + "_";
+
+        if (n->_leftChild.get() != nullptr) {
+            const void *address = static_cast<const void *>(n->_leftChild.get());
+            std::stringstream ss;
+            ss << address;
+            std::string child = ss.str();
+            child = "_" + child + "_";
+
+            std::string toWrite = father + "->" + child + "[style=dashed];";
+            f << toWrite;
+        }
+
+        if (n->_rightChild.get() != nullptr) {
+            const void *address = static_cast<const void *>(n->_rightChild.get());
+            std::stringstream ss;
+            ss << address;
+            std::string child = ss.str();
+            child = "_" + child + "_";
+
+            std::string toWrite = father + "->" + child + ";";
+            f << toWrite;
+        }
+
+        linkInDot(n->_leftChild, f, marked);
+
+        linkInDot(n->_rightChild, f, marked);
     }
-
-    linkInDot(n->_leftChild, f, marked);
-
-    linkInDot(n->_rightChild, f, marked);
-  }
 }
 
 /*
@@ -250,42 +240,41 @@ arg: 0 boolean to indicate if we want to put luka's word as label
 Fill the dot file by calling defineInDot() and linkInDot().
 */
 void Tree::Dot(bool withWords) {
-  // exemple:
-  // digraph{a->bb[style=dashed];b[label=\"som1\"];b->c[labal="som1"];a->c;d->c;e->c;e->a;}
+    // exemple:
+    // digraph{a->bb[style=dashed];b[label=\"som1\"];b->c[labal="som1"];a->c;d->c;e->c;e->a;}
 
-  system("mkdir ../tree");
-  std::ofstream dotFile("../tree/tree.dot");
+    system("mkdir ../tree");
+    std::ofstream dotFile("../tree/tree.dot");
 
-  std::unordered_set<std::shared_ptr<Node>> marked;
+    std::unordered_set<std::shared_ptr<Node>> marked;
 
-  if (dotFile.is_open()) {
+    if (dotFile.is_open()) {
+        dotFile << "digraph{";
 
-    dotFile << "digraph{";
+        int height = getTreeHeightFromWidth(_root->_value.size());
 
-    int height = getTreeHeightFromWidth(_root->_value.size());
+        defineInDot(_root, height, dotFile, withWords);
 
-    defineInDot(_root, height, dotFile, withWords);
+        linkInDot(_root, dotFile, marked);
 
-    linkInDot(_root, dotFile, marked);
+        dotFile << "}";
 
-    dotFile << "}";
+        dotFile.close();
+    }
 
-    dotFile.close();
-  }
+    std::cout << "using dot -Tsvg -o ../tree/tree.svg ../tree/tree.dot"
+              << std::endl;
 
-  std::cout << "using dot -Tsvg -o ../tree/tree.svg ../tree/tree.dot"
-            << std::endl;
-
-  // creating tree image
-  system("dot -Tsvg -o ../tree/tree.svg ../tree/tree.dot");
+    // creating tree image
+    system("dot -Tsvg -o ../tree/tree.svg ../tree/tree.dot");
 }
 
 /*
 Print the content of luka's map
 */
 void Tree::PrintLukaMap() {
-  std::cout << "Luka's Map:" << std::endl;
-  for (const auto &e : _words) {
-    std::cout << e.first << std::endl;
-  }
+    std::cout << "Luka's Map:" << std::endl;
+    for (const auto &e : _words) {
+        std::cout << e.first << std::endl;
+    }
 }
