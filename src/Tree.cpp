@@ -291,7 +291,9 @@ void Tree::compressionBDDAux(std::shared_ptr<Node> &n, std::shared_ptr<Node> &pa
     if (n->_leftChild->_value == n->_rightChild->_value) {
         std::cout << "Inside Deletion Rule" << std::endl;
 
-        if (childChooser == LEFT) {
+        if (childChooser == -1) {
+            n = n->_leftChild;
+        } else if (childChooser == LEFT) {
             parent->_leftChild = n->_leftChild;
         } else {  // RIGHT
             parent->_rightChild = n->_leftChild;
@@ -299,4 +301,4 @@ void Tree::compressionBDDAux(std::shared_ptr<Node> &n, std::shared_ptr<Node> &pa
     }
 }
 
-void Tree::CompressionBDD() { compressionBDDAux(_root, _root, 0); }
+void Tree::CompressionBDD() { compressionBDDAux(_root, _root, -1); }

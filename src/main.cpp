@@ -38,10 +38,10 @@ int main(int argc, char **argv) {
 
     std::cout << "Compressing" << std::endl;
     tree.Compress();
-
-    std::cout << "Creating graph with dot" << std::endl;
-    tree.Dot();
-
+    /*
+        std::cout << "Creating graph with dot" << std::endl;
+        tree.Dot();
+    */
     tree.PrintAllChildren();
 
     tree.PrintLukaMap();
