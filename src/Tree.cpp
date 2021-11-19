@@ -278,3 +278,31 @@ void Tree::PrintLukaMap() {
         std::cout << e.first << std::endl;
     }
 }
+
+void Tree::compressionBDDAux(std::shared_ptr<Node> &n, std::shared_ptr<Node> &parent, int leftChild){
+    
+    if (n->_leftChild == nullptr) {
+        return;
+    }
+
+    compressionBDDAux(n->_leftChild, n, 1);
+    compressionBDDAux(n->_rightChild, n, 0);
+
+    // Deletion rule
+    if (n->_leftChild->_value == n->_rightChild->_value) {
+        std::cout << "Inside Deletion Rule" << std::endl;
+        std::cout << n->_leftChild->_value << std::endl;
+        if (leftChild == -1) { // no parent
+            n = n->_leftChild; // ?
+        } else if (leftChild == 1) {
+            parent->_leftChild = n->_leftChild;
+        } else {
+            parent->_rightChild = n->_leftChild;
+        }
+
+        // free n
+    }
+
+}
+
+void Tree::CompressionBDD() { compressionBDDAux(_root, _root, -1); }

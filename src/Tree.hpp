@@ -28,6 +28,8 @@ class Tree {
 
     void PrintLukaMap();
 
+    void CompressionBDD();
+
    private:
     /****MEMBER VARIABLE****/
     std::shared_ptr<Node> _root;
@@ -49,6 +51,8 @@ class Tree {
 
     void linkInDot(std::shared_ptr<Node> &n, std::ofstream &f,
                    std::unordered_set<std::shared_ptr<Node>> &marked);
+
+    void compressionBDDAux(std::shared_ptr<Node> &n, std::shared_ptr<Node> &parent, int leftChild);
 };
 }  // namespace ex2
 

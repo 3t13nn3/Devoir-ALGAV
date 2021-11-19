@@ -46,5 +46,13 @@ int main(int argc, char **argv) {
 
     tree.PrintLukaMap();
 
+    // Question 3
+
+    std::cout << "Compressing further" << std::endl;
+    tree.CompressionBDD();
+
+    std::cout << "Creating compressed graph with dot" << std::endl;
+    tree.Dot();
+
     exit(0);
 }
