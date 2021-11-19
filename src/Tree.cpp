@@ -77,7 +77,7 @@ void Tree::printAllChildrenAux(std::shared_ptr<Node> &n, int stage) {
     }
     std::cout << "[" << stage << "]"
               << "Node: ";
-    std::cout << n->_value << std::endl;
+    std::cout << n->_value << " <> " << n << std::endl;
 }
 
 // Calling aux function to avoid problemes on recursion with the reference of a

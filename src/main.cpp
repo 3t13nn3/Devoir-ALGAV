@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
 
     std::cout << "Compressing further" << std::endl;
     tree.CompressionBDD();
-
+tree.PrintAllChildren();
     std::cout << "Creating compressed graph with dot" << std::endl;
     tree.Dot();
 
