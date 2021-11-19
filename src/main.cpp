@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
 
     // Question 2
 
-    ex2::Tree tree = ex2::Tree();
+    ex2ex3::Tree tree = ex2ex3::Tree();
 
     tree.ConsArbre(tableOfTruth);
 

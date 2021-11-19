@@ -1,6 +1,6 @@
 #include "Tree.hpp"
 
-using namespace ex2;
+using namespace ex2ex3;
 
 Tree::Tree() { _root = newNode(); }
 
@@ -279,30 +279,24 @@ void Tree::PrintLukaMap() {
     }
 }
 
-void Tree::compressionBDDAux(std::shared_ptr<Node> &n, std::shared_ptr<Node> &parent, int leftChild){
-    
+void Tree::compressionBDDAux(std::shared_ptr<Node> &n, std::shared_ptr<Node> &parent, int childChooser) {
     if (n->_leftChild == nullptr) {
         return;
     }
 
-    compressionBDDAux(n->_leftChild, n, 1);
-    compressionBDDAux(n->_rightChild, n, 0);
+    compressionBDDAux(n->_leftChild, n, LEFT);
+    compressionBDDAux(n->_rightChild, n, RIGHT);
 
     // Deletion rule
     if (n->_leftChild->_value == n->_rightChild->_value) {
         std::cout << "Inside Deletion Rule" << std::endl;
-        std::cout << n->_leftChild->_value << std::endl;
-        if (leftChild == -1) { // no parent
-            n = n->_leftChild; // ?
-        } else if (leftChild == 1) {
+
+        if (childChooser == LEFT) {
             parent->_leftChild = n->_leftChild;
-        } else {
+        } else {  // RIGHT
             parent->_rightChild = n->_leftChild;
         }
-
-        // free n
     }
-
 }
 
-void Tree::CompressionBDD() { compressionBDDAux(_root, _root, -1); }
+void Tree::CompressionBDD() { compressionBDDAux(_root, _root, 0); }

@@ -11,7 +11,10 @@
 
 #include "Node.h"
 
-namespace ex2 {
+enum CHILD { LEFT,
+             RIGHT };
+
+namespace ex2ex3 {
 class Tree {
    public:
     Tree();
@@ -54,6 +57,6 @@ class Tree {
 
     void compressionBDDAux(std::shared_ptr<Node> &n, std::shared_ptr<Node> &parent, int leftChild);
 };
-}  // namespace ex2
+}  // namespace ex2ex3
 
 #endif
