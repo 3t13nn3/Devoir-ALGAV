@@ -167,8 +167,8 @@ void Tree::defineInDot(std::shared_ptr<Node> &n, int height, std::ofstream &f,
 
     std::string toWrite = "";
     if (withWords) {
-        toWrite = name + "[label=\"x" + std::to_string(height) + " [" + n->_value +
-                  "]\"];";
+        toWrite = name + "[label=\"x" + std::to_string(height) + " [" +
+                  n->_value + "]\"];";
     } else {
         if (n->_leftChild.get() == nullptr && n->_rightChild.get() == nullptr) {
             toWrite = name + "[label=\"x" + std::to_string(height) + " [" +
@@ -208,7 +208,8 @@ void Tree::linkInDot(std::shared_ptr<Node> &n, std::ofstream &f,
         father = "_" + father + "_";
 
         if (n->_leftChild.get() != nullptr) {
-            const void *address = static_cast<const void *>(n->_leftChild.get());
+            const void *address =
+                static_cast<const void *>(n->_leftChild.get());
             std::stringstream ss;
             ss << address;
             std::string child = ss.str();
@@ -219,7 +220,8 @@ void Tree::linkInDot(std::shared_ptr<Node> &n, std::ofstream &f,
         }
 
         if (n->_rightChild.get() != nullptr) {
-            const void *address = static_cast<const void *>(n->_rightChild.get());
+            const void *address =
+                static_cast<const void *>(n->_rightChild.get());
             std::stringstream ss;
             ss << address;
             std::string child = ss.str();
@@ -239,12 +241,12 @@ void Tree::linkInDot(std::shared_ptr<Node> &n, std::ofstream &f,
 arg: 0 boolean to indicate if we want to put luka's word as label
 Fill the dot file by calling defineInDot() and linkInDot().
 */
-void Tree::Dot(bool withWords) {
+void Tree::Dot(std::string name, bool withWords) {
     // exemple:
     // digraph{a->bb[style=dashed];b[label=\"som1\"];b->c[labal="som1"];a->c;d->c;e->c;e->a;}
 
     system("mkdir ../tree");
-    std::ofstream dotFile("../tree/tree.dot");
+    std::ofstream dotFile("../tree/" + name + ".dot");
 
     std::unordered_set<std::shared_ptr<Node>> marked;
 
@@ -262,11 +264,12 @@ void Tree::Dot(bool withWords) {
         dotFile.close();
     }
 
-    std::cout << "using dot -Tsvg -o ../tree/tree.svg ../tree/tree.dot"
-              << std::endl;
+    std::cout << "using dot -Tsvg -o ../tree/" << name << ".svg ../tree/" << name
+              << ".dot" << std::endl;
 
     // creating tree image
-    system("dot -Tsvg -o ../tree/tree.svg ../tree/tree.dot");
+    system(("dot -Tsvg -o ../tree/" + name + ".svg ../tree/" + name + ".dot")
+               .c_str());
 }
 
 /*
@@ -279,26 +282,69 @@ void Tree::PrintLukaMap() {
     }
 }
 
-void Tree::compressionBDDAux(std::shared_ptr<Node> &n, std::shared_ptr<Node> &parent, int childChooser) {
-    if (n->_leftChild == nullptr) {
+/*
+void Tree::compressAux(std::shared_ptr<Node> &n) {
+    if (n.get() == nullptr) {
+        return;
+    }
+
+    compressAux(n->_leftChild);
+
+    compressAux(n->_rightChild);
+
+    if (n != _words[n->_value]) {
+        // freeAllChildren(n->_leftChild);
+        // freeAllChildren(n->_rightChild);
+
+        n = _words[n->_value];
+    }
+}
+*/
+
+/*
+arg: 0 Node to applied compress function (the root of the BDD generaly), 1
+Father node of the arg 0, 2 flag that can tell us where we have recovery the
+node from Check for each childs of the current node the associate node of the
+current Luka's word in our map (_words). If nodes aren't the same, we assign the
+node in the map to the current node. After that, we need to apply the deletion
+rule that say if both childs of a node have the same value (then are the same
+because we replaced them by the associate map value), so we could remove it ant
+link there father to there child Based on BFS.
+*/
+void Tree::compressionBDDAux(std::shared_ptr<Node> &n,
+                             std::shared_ptr<Node> &parent, int from) {
+    if (n->_leftChild.get() == nullptr) {
         return;
     }
 
     compressionBDDAux(n->_leftChild, n, LEFT);
     compressionBDDAux(n->_rightChild, n, RIGHT);
 
-    // Deletion rule
-    if (n->_leftChild->_value == n->_rightChild->_value) {
-        std::cout << "Inside Deletion Rule" << std::endl;
+    // replace childs pointers by the map nodes pointers
+    if (n->_leftChild != _words[n->_leftChild->_value]) {
+        // freeAllChildren(n->_leftChild);
+        // freeAllChildren(n->_rightChild);
 
-        if (childChooser == -1) {
-            n = n->_leftChild;
-        } else if (childChooser == LEFT) {
+        n->_leftChild = _words[n->_leftChild->_value];
+    } else if (n->_rightChild != _words[n->_rightChild->_value]) {
+        // freeAllChildren(n->_rightChild);
+        // freeAllChildren(n->_rightChild);
+
+        n->_rightChild = _words[n->_rightChild->_value];
+    }
+
+    // then the deletion rule
+    if (n->_leftChild->_value == n->_rightChild->_value) {
+        /*if (from == NOTHING) { // if we want to cut the head in case of double
+        same son of the root n = n->_leftChild; } else */
+        if (from == LEFT) {
             parent->_leftChild = n->_leftChild;
-        } else {  // RIGHT
+        } else if (from == RIGHT) {
             parent->_rightChild = n->_leftChild;
         }
     }
 }
 
-void Tree::CompressionBDD() { compressionBDDAux(_root, _root, -1); }
+// Calling aux function to avoid problemes on recursion with the reference of a
+// class member
+void Tree::CompressionBDD() { compressionBDDAux(_root, _root, NOTHING); }

@@ -11,8 +11,7 @@
 
 #include "Node.h"
 
-enum CHILD { LEFT,
-             RIGHT };
+enum CHILD { NOTHING, LEFT, RIGHT };
 
 namespace ex2ex3 {
 class Tree {
@@ -27,7 +26,7 @@ class Tree {
 
     void Compress();
 
-    void Dot(bool withWords = true);
+    void Dot(std::string name, bool withWords = true);
 
     void PrintLukaMap();
 
@@ -55,7 +54,8 @@ class Tree {
     void linkInDot(std::shared_ptr<Node> &n, std::ofstream &f,
                    std::unordered_set<std::shared_ptr<Node>> &marked);
 
-    void compressionBDDAux(std::shared_ptr<Node> &n, std::shared_ptr<Node> &parent, int leftChild);
+    void compressionBDDAux(std::shared_ptr<Node> &n,
+                           std::shared_ptr<Node> &parent, int leftChild);
 };
 }  // namespace ex2ex3
 
