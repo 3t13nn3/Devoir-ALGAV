@@ -1,6 +1,8 @@
+#include <chrono>
+#include <thread>
+
 #include "TableOfTruth.hpp"
 #include "Tree.hpp"
-
 int main(int argc, char **argv) {
     std::string input = "";
 
@@ -28,8 +30,8 @@ int main(int argc, char **argv) {
     std::cout << "Applying Luka on tree1" << std::endl;
     tree1.Luka();
     tree1.PrintLukaMap();
-
-    std::cout << "Creating init.dot" << std::endl;
+    tree1.PrintAllChildren();
+    // std::cout << "Creating init.dot" << std::endl;
     tree1.Dot("init");
 
     std::cout << "Compressing" << std::endl;
@@ -53,6 +55,5 @@ int main(int argc, char **argv) {
 
     std::cout << "Creating compressedBDD.dot" << std::endl;
     tree2.Dot("compressedBDD");
-
     exit(0);
 }

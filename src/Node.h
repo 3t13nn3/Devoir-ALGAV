@@ -7,13 +7,12 @@
 typedef struct node Node;
 struct node {
     std::string _value;
-    std::shared_ptr<Node> _leftChild;
-    std::shared_ptr<Node> _rightChild;
+    Node* _leftChild;
+    Node* _rightChild;
 };
 
-std::shared_ptr<Node> newNode();
-std::shared_ptr<Node> insert(std::shared_ptr<Node> &initTree,
-                             std::shared_ptr<Node> treeToAdd);
+Node* newNode(Node* left, Node* right, std::string value);
+Node* insert(Node*& initTree, Node* treeToAdd);
 int getTreeHeightFromWidth(int width);
 
 #endif

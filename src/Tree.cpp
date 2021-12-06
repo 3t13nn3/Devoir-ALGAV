@@ -2,15 +2,16 @@
 
 using namespace ex2ex3;
 
-Tree::Tree() { _root = newNode(); }
+Tree::Tree() { _root = newNode(nullptr, nullptr, ""); }
+
+Tree::~Tree() { FreeAllChildren(_root); }
 
 /*
 arg: 0 Initial Tree, 1 Height of the tree, 2 table of truth
 Create a Tree of a Height "height", based on DFS, putting the table of truth
 value at leafs
 */
-void Tree::createTreeFromTable(std::shared_ptr<Node> &tree, int height,
-                               std::string &table) {
+void Tree::createTreeFromTable(Node *&tree, int height, std::string &table) {
     if (height == 0) {
         tree->_value = table[0];
 
@@ -19,10 +20,10 @@ void Tree::createTreeFromTable(std::shared_ptr<Node> &tree, int height,
         return;
     }
 
-    insert(tree, newNode());
+    insert(tree, newNode(nullptr, nullptr, ""));
     createTreeFromTable(tree->_leftChild, height - 1, table);
 
-    insert(tree, newNode());
+    insert(tree, newNode(nullptr, nullptr, ""));
     createTreeFromTable(tree->_rightChild, height - 1, table);
 }
 
@@ -38,32 +39,26 @@ void Tree::ConsArbre(std::string &table) {
 arg: 0 Root node
 Free all the children of a given node
 */
-/*
-void freeAllChildren(std::shared_ptr<Node> &n) {
+void Tree::FreeAllChildren(Node *&n) {
+    if (n == nullptr) {
+        return;
+    }
 
-  if (n.get() == nullptr) {
-    return;
-  }
+    FreeAllChildren(n->_leftChild);
 
-  freeAllChildren(n->_leftChild);
+    FreeAllChildren(n->_rightChild);
 
-  freeAllChildren(n->_rightChild);
-
-  n = nullptr;
-
-  if (n == nullptr) { // needed because a same node could be deleted and we
-                      // don't want this
-    //delete n;
-  }
+    n = nullptr;
+    delete n;
+    n = nullptr;
 }
-*/
 
 /*
 arg: 0 the root, 1 stage of the node (call it with 0, a root is always as 0)
 Print all the children of a given node
 */
-void Tree::printAllChildrenAux(std::shared_ptr<Node> &n, int stage) {
-    if (n.get() == nullptr) {
+void Tree::printAllChildrenAux(Node *&n, int stage) {
+    if (n == nullptr) {
         return;
     }
 
@@ -80,8 +75,8 @@ void Tree::printAllChildrenAux(std::shared_ptr<Node> &n, int stage) {
     std::cout << n->_value << " <> " << n << std::endl;
 }
 
-// Calling aux function to avoid problemes on recursion with the reference of a
-// class member
+// Calling aux function to avoid problemes on recursion with the reference
+// of a class member
 void Tree::PrintAllChildren() { printAllChildrenAux(_root); }
 
 /*
@@ -89,9 +84,9 @@ arg: 0 Node to applied luka function (the root generaly)
 Assign a Luka's word for each node and fill our _words map with the nodes we
 browse. Based on BFS.
 */
-void Tree::lukaAux(std::shared_ptr<Node> &n) {
+void Tree::lukaAux(Node *&n) {
     // If we are on leafs
-    if (n->_leftChild.get() == nullptr) {
+    if (n->_leftChild == nullptr) {
         if (_words.find(n->_value) == _words.end()) {
             // not found
             _words[n->_value] = n;
@@ -116,18 +111,18 @@ void Tree::lukaAux(std::shared_ptr<Node> &n) {
     }
 }
 
-// Calling aux function to avoid problemes on recursion with the reference of a
-// class member
+// Calling aux function to avoid problemes on recursion with the reference
+// of a class member
 void Tree::Luka() { lukaAux(_root); }
 
 /*
 arg: 0 Node to applied compress function (the root generaly)
 Check for each node the associate node of the current Luka's word in our map
-(_words). If nodes aren't the same, we assign the node in the map to the current
-node. Based on BFS.
+(_words). If nodes aren't the same, we assign the node in the map to the
+current node. Based on BFS.
 */
-void Tree::compressAux(std::shared_ptr<Node> &n) {
-    if (n.get() == nullptr) {
+void Tree::compressAux(Node *&n) {
+    if (n == nullptr) {
         return;
     }
 
@@ -136,30 +131,31 @@ void Tree::compressAux(std::shared_ptr<Node> &n) {
     compressAux(n->_rightChild);
 
     if (n != _words[n->_value]) {
-        // freeAllChildren(n->_leftChild);
-        // freeAllChildren(n->_rightChild);
-
+        auto tmp = n;
         n = _words[n->_value];
+        delete tmp;
     }
 }
 
-// Calling aux function to avoid problemes on recursion with the reference of a
-// class member
-void Tree::Compress() { compressAux(_root); }
+// Calling aux function to avoid problemes on recursion with the reference
+// of a class member
+void Tree::Compress() {
+    compressAux(_root);
+    _root = _words[_root->_value];
+}
 
 /*
-arg: 0 Initial Node, 1 Height of the tree, 2 stream to the file we are writting,
-3 boolean to indicate if we want to put luka's word as label
-Define all nodes in our dot file with the adresse of each node. We are labelling
-them with the current height of a node.
+arg: 0 Initial Node, 1 Height of the tree, 2 stream to the file we are
+writting, 3 boolean to indicate if we want to put luka's word as label
+Define all nodes in our dot file with the adresse of each node. We are
+labelling them with the current height of a node.
 */
-void Tree::defineInDot(std::shared_ptr<Node> &n, int height, std::ofstream &f,
-                       bool withWords) {
-    if (n.get() == nullptr) {
+void Tree::defineInDot(Node *&n, int height, std::ofstream &f, bool withWords) {
+    if (n == nullptr) {
         return;
     }
 
-    const void *address = static_cast<const void *>(n.get());
+    const void *address = static_cast<const void *>(n);
     std::stringstream ss;
     ss << address;
     std::string name = ss.str();
@@ -170,7 +166,7 @@ void Tree::defineInDot(std::shared_ptr<Node> &n, int height, std::ofstream &f,
         toWrite = name + "[label=\"x" + std::to_string(height) + " [" +
                   n->_value + "]\"];";
     } else {
-        if (n->_leftChild.get() == nullptr && n->_rightChild.get() == nullptr) {
+        if (n->_leftChild == nullptr && n->_rightChild == nullptr) {
             toWrite = name + "[label=\"x" + std::to_string(height) + " [" +
                       n->_value + "]\"];";
         } else {
@@ -185,15 +181,14 @@ void Tree::defineInDot(std::shared_ptr<Node> &n, int height, std::ofstream &f,
 }
 
 /*
-arg: 0 Initial Node, 1 stream to the file we are writting, 2 a set of nodes we
-have already process
-Link every nodes to theire child in the dot file. Based on
-nodes adresses. We need to check if we have already process a node to avoid
-multiple link.
+arg: 0 Initial Node, 1 stream to the file we are writting, 2 a set of nodes
+we have already process Link every nodes to theire child in the dot file.
+Based on nodes adresses. We need to check if we have already process a node
+to avoid multiple link.
 */
-void Tree::linkInDot(std::shared_ptr<Node> &n, std::ofstream &f,
-                     std::unordered_set<std::shared_ptr<Node>> &marked) {
-    if (n.get() == nullptr) {
+void Tree::linkInDot(Node *&n, std::ofstream &f,
+                     std::unordered_set<Node *> &marked) {
+    if (n == nullptr) {
         return;
     }
 
@@ -201,15 +196,14 @@ void Tree::linkInDot(std::shared_ptr<Node> &n, std::ofstream &f,
 
         marked.insert(n);
 
-        const void *address = static_cast<const void *>(n.get());
+        const void *address = static_cast<const void *>(n);
         std::stringstream ss;
         ss << address;
         std::string father = ss.str();
         father = "_" + father + "_";
 
-        if (n->_leftChild.get() != nullptr) {
-            const void *address =
-                static_cast<const void *>(n->_leftChild.get());
+        if (n->_leftChild != nullptr) {
+            const void *address = static_cast<const void *>(n->_leftChild);
             std::stringstream ss;
             ss << address;
             std::string child = ss.str();
@@ -219,9 +213,8 @@ void Tree::linkInDot(std::shared_ptr<Node> &n, std::ofstream &f,
             f << toWrite;
         }
 
-        if (n->_rightChild.get() != nullptr) {
-            const void *address =
-                static_cast<const void *>(n->_rightChild.get());
+        if (n->_rightChild != nullptr) {
+            const void *address = static_cast<const void *>(n->_rightChild);
             std::stringstream ss;
             ss << address;
             std::string child = ss.str();
@@ -248,7 +241,7 @@ void Tree::Dot(std::string name, bool withWords) {
     system("mkdir ../tree");
     std::ofstream dotFile("../tree/" + name + ".dot");
 
-    std::unordered_set<std::shared_ptr<Node>> marked;
+    std::unordered_set<Node *> marked;
 
     if (dotFile.is_open()) {
         dotFile << "digraph{";
@@ -264,8 +257,8 @@ void Tree::Dot(std::string name, bool withWords) {
         dotFile.close();
     }
 
-    std::cout << "using dot -Tsvg -o ../tree/" << name << ".svg ../tree/" << name
-              << ".dot" << std::endl;
+    std::cout << "using dot -Tsvg -o ../tree/" << name << ".svg ../tree/"
+              << name << ".dot" << std::endl;
 
     // creating tree image
     system(("dot -Tsvg -o ../tree/" + name + ".svg ../tree/" + name + ".dot")
@@ -283,37 +276,17 @@ void Tree::PrintLukaMap() {
 }
 
 /*
-void Tree::compressAux(std::shared_ptr<Node> &n) {
-    if (n.get() == nullptr) {
-        return;
-    }
-
-    compressAux(n->_leftChild);
-
-    compressAux(n->_rightChild);
-
-    if (n != _words[n->_value]) {
-        // freeAllChildren(n->_leftChild);
-        // freeAllChildren(n->_rightChild);
-
-        n = _words[n->_value];
-    }
-}
-*/
-
-/*
 arg: 0 Node to applied compress function (the root of the BDD generaly), 1
 Father node of the arg 0, 2 flag that can tell us where we have recovery the
-node from Check for each childs of the current node the associate node of the
-current Luka's word in our map (_words). If nodes aren't the same, we assign the
-node in the map to the current node. After that, we need to apply the deletion
-rule that say if both childs of a node have the same value (then are the same
-because we replaced them by the associate map value), so we could remove it ant
-link there father to there child Based on BFS.
+node from Check for each childs of the current node the associate node of
+the current Luka's word in our map (_words). If nodes aren't the same, we
+assign the node in the map to the current node. After that, we need to apply
+the deletion rule that say if both childs of a node have the same value
+(then are the same because we replaced them by the associate map value), so
+we could remove it ant link there father to there child Based on BFS.
 */
-void Tree::compressionBDDAux(std::shared_ptr<Node> &n,
-                             std::shared_ptr<Node> &parent, int from) {
-    if (n->_leftChild.get() == nullptr) {
+void Tree::compressionBDDAux(Node *&n, Node *&parent, int from) {
+    if (n->_leftChild == nullptr) {
         return;
     }
 
@@ -322,29 +295,29 @@ void Tree::compressionBDDAux(std::shared_ptr<Node> &n,
 
     // replace childs pointers by the map nodes pointers
     if (n->_leftChild != _words[n->_leftChild->_value]) {
-        // freeAllChildren(n->_leftChild);
-        // freeAllChildren(n->_rightChild);
-
+        auto tmp = n->_leftChild;
         n->_leftChild = _words[n->_leftChild->_value];
+        delete tmp;
     } else if (n->_rightChild != _words[n->_rightChild->_value]) {
-        // freeAllChildren(n->_rightChild);
-        // freeAllChildren(n->_rightChild);
-
+        auto tmp = n->_rightChild;
         n->_rightChild = _words[n->_rightChild->_value];
+        delete tmp;
     }
 
     // then the deletion rule
     if (n->_leftChild->_value == n->_rightChild->_value) {
-        /*if (from == NOTHING) { // if we want to cut the head in case of double
-        same son of the root n = n->_leftChild; } else */
+        /*if (from == NOTHING) { // if we want to cut the head in case of
+        double same son of the root n = n->_leftChild; } else */
         if (from == LEFT) {
             parent->_leftChild = n->_leftChild;
+            delete n->_leftChild;
         } else if (from == RIGHT) {
             parent->_rightChild = n->_leftChild;
+            delete n->_rightChild;
         }
     }
 }
 
-// Calling aux function to avoid problemes on recursion with the reference of a
-// class member
+// Calling aux function to avoid problemes on recursion with the reference
+// of a class member
 void Tree::CompressionBDD() { compressionBDDAux(_root, _root, NOTHING); }
