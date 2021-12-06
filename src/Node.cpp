@@ -1,10 +1,10 @@
 #include "Node.h"
-
+#include <iostream>
 /*
 Creating a new empty node
 */
 Node* newNode(Node* left, Node* right, std::string value) {
-    Node* toReturn = (Node*)malloc(sizeof(Node));
+    Node* toReturn = new Node;
 
     toReturn->_leftChild = left;
     toReturn->_rightChild = right;

@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
     std::string tableOfTruth = tof.Table(number, 1 << 3);
     std::string tableOfTruthCpy = tableOfTruth;
     std::cout << tableOfTruth << std::endl;
-
+    
     // Question 2
     ex2ex3::Tree tree1 = ex2ex3::Tree();
     tree1.ConsArbre(tableOfTruth);

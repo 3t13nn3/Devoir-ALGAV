@@ -48,9 +48,9 @@ void Tree::FreeAllChildren(Node *&n) {
 
     FreeAllChildren(n->_rightChild);
 
-    n = nullptr;
+    //n = nullptr;
     delete n;
-    n = nullptr;
+    //n = nullptr;
 }
 
 /*
