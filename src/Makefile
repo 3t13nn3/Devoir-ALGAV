@@ -6,7 +6,7 @@ HEADER	= $(wildcard *.hpp) $(wildcard *.h)
 OUT		= ALGAV.out
 CC	 	= g++
 
-CFLAGS	= -O3 -Wall -W -pedantic -std=c++17
+CFLAGS	= -Ofast -Wall -W -pedantic -std=c++17
 
 LFLAGS	= -lgmp -lgmpxx
 
@@ -14,10 +14,7 @@ OS := $(shell uname)
 
 
 all: $(OBJS)
-
 	$(CC) $(OBJS) -o $(OUT) $(LFLAGS)
-
-
 
 %.o:	%.cpp %.hpp
 	$(CC) -c $< $(CFLAGS)
@@ -27,7 +24,6 @@ all: $(OBJS)
 
 %.o:	%.cpp
 	$(CC) -c $< $(CFLAGS)
-
 
 clean:
 	rm -f $(OBJS)

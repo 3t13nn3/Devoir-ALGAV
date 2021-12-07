@@ -296,10 +296,12 @@ void Tree::compressionBDDAux(Node *&n, Node *&parent, int from) {
         return;
     }
 
+    
     compressionBDDAux(n->_leftChild, n, LEFT);
     compressionBDDAux(n->_rightChild, n, RIGHT);
 
-    std::cout << n->_value << std::endl;
+    
+    //std::cout << n->_value << std::endl;
     // then the deletion rule
     if (n->_leftChild != nullptr && n->_rightChild != nullptr &&
         n->_leftChild->_value == n->_rightChild->_value) {
@@ -314,6 +316,13 @@ void Tree::compressionBDDAux(Node *&n, Node *&parent, int from) {
         }
         // if n not in our word map
         if (_words.find(n->_value) == _words.end()) delete n;
+    }
+
+    //compress init
+    if (n != _words[n->_value]) {
+        auto tmp = n;
+        n = _words[n->_value];
+        delete tmp;
     }
 }
 
