@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
     // Question 1
     ex1::TableOfTruth tof = ex1::TableOfTruth();
     // 1<<n == 2^n;
-    std::string tableOfTruth = tof.Table(number, 1 << 3);
+    std::string tableOfTruth = tof.Table(number, 1 << 4);
     std::string tableOfTruthCpy = tableOfTruth;
     std::cout << tableOfTruth << std::endl;
     
@@ -40,20 +40,33 @@ int main(int argc, char **argv) {
     std::cout << "Creating compressed.dot" << std::endl;
     tree1.Dot("compressed");
 
-    // Question 3
-    // working on a brand new tree, construct from the same table of truth
-    ex2ex3::Tree tree2 = ex2ex3::Tree();
-    tree2.ConsArbre(tableOfTruthCpy);
-
-    std::cout << "Applying Luka on tree2" << std::endl;
-    tree2.Luka();
-    tree2.PrintLukaMap();
-
-    std::cout << "Compressing further" << std::endl;
-    tree2.CompressionBDD();
-    tree2.PrintAllChildren();
+    tree1.CompressionBDD();
+    tree1.PrintAllChildren();
 
     std::cout << "Creating compressedBDD.dot" << std::endl;
+    tree1.Dot("compressedBDD");
+
+
+    tof = ex1::TableOfTruth(); //// 61152
+    tableOfTruth = tof.Table(mpz_class("28662", 10), 1 << 4);
+
+    ex2ex3::Tree tree2 = ex2ex3::Tree();
+    tree2.ConsArbre(tableOfTruth);
+    tree2.Luka();
+    tree2.Compress();
+    tree2.CompressionBDD();
     tree2.Dot("compressedBDD");
+    
+                        //Table of truth of AND
+    //tree1.FusionBDD(tree2,"0001");
+    tree1.FusionBDD(tree2);
+    tree1.Luka();
+    
+    //tree1.PrintLukaMap();
+    tree1.Compress();
+    tree1.CompressionBDD();
+    tree1.Dot("Fusion");
+
+
     exit(0);
 }

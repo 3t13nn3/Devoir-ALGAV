@@ -8,6 +8,8 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <cmath>
+#include <vector>
 
 #include "Node.h"
 
@@ -36,6 +38,10 @@ class Tree {
 
     void CompressionBDD();
 
+    void FusionBDD(Tree &toFusionWith, std::string table = "");
+
+    void UncompressionBDD();
+
    private:
     /****MEMBER VARIABLE****/
     Node *_root;
@@ -57,6 +63,13 @@ class Tree {
                    std::unordered_set<Node *> &marked);
 
     void compressionBDDAux(Node *&n, Node *&parent, int leftChild);
+
+    void fusionBDDAux(Node *&n, Node *&toFusionWith, Node *&fusionNode, std::string table);
+
+    void lukaFusionnedAux(Node *&n);
+
+    void uncompressionBDDAux(Node *&n);
+
 };
 }  // namespace ex2ex3
 

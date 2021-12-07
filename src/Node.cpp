@@ -1,5 +1,5 @@
 #include "Node.h"
-#include <iostream>
+
 /*
 Creating a new empty node
 */

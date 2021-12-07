@@ -48,9 +48,9 @@ void Tree::FreeAllChildren(Node *&n) {
 
     FreeAllChildren(n->_rightChild);
 
-    //n = nullptr;
+    // n = nullptr;
     delete n;
-    //n = nullptr;
+    // n = nullptr;
 }
 
 /*
@@ -113,7 +113,13 @@ void Tree::lukaAux(Node *&n) {
 
 // Calling aux function to avoid problemes on recursion with the reference
 // of a class member
-void Tree::Luka() { lukaAux(_root); }
+void Tree::Luka() {
+    if (_root->_value.find("|") != std::string::npos) {
+        lukaFusionnedAux(_root);
+    } else {
+        lukaAux(_root);
+    }
+}
 
 /*
 arg: 0 Node to applied compress function (the root generaly)
@@ -286,38 +292,158 @@ the deletion rule that say if both childs of a node have the same value
 we could remove it ant link there father to there child Based on BFS.
 */
 void Tree::compressionBDDAux(Node *&n, Node *&parent, int from) {
-    if (n->_leftChild == nullptr) {
+    if (n == nullptr) {
         return;
     }
 
     compressionBDDAux(n->_leftChild, n, LEFT);
     compressionBDDAux(n->_rightChild, n, RIGHT);
 
-    // replace childs pointers by the map nodes pointers
-    if (n->_leftChild != _words[n->_leftChild->_value]) {
-        auto tmp = n->_leftChild;
-        n->_leftChild = _words[n->_leftChild->_value];
-        delete tmp;
-    } else if (n->_rightChild != _words[n->_rightChild->_value]) {
-        auto tmp = n->_rightChild;
-        n->_rightChild = _words[n->_rightChild->_value];
-        delete tmp;
-    }
-
+    std::cout << n->_value << std::endl;
     // then the deletion rule
-    if (n->_leftChild->_value == n->_rightChild->_value) {
+    if (n->_leftChild != nullptr && n->_rightChild != nullptr &&
+        n->_leftChild->_value == n->_rightChild->_value) {
         /*if (from == NOTHING) { // if we want to cut the head in case of
         double same son of the root n = n->_leftChild; } else */
         if (from == LEFT) {
             parent->_leftChild = n->_leftChild;
-            delete n->_leftChild;
+
         } else if (from == RIGHT) {
-            parent->_rightChild = n->_leftChild;
-            delete n->_rightChild;
+            parent->_rightChild = n->_rightChild;
+            // delete n->_rightChild;
         }
+        // if n not in our word map
+        if (_words.find(n->_value) == _words.end()) delete n;
     }
 }
 
 // Calling aux function to avoid problemes on recursion with the reference
 // of a class member
 void Tree::CompressionBDD() { compressionBDDAux(_root, _root, NOTHING); }
+
+void Tree::fusionBDDAux(Node *&n, Node *&toFusionWith, Node *&fusionNode, std::string table) {
+    if (n == nullptr) {
+        return;
+    }
+
+    if (n->_value.size() == toFusionWith->_value.size()) {
+        fusionNode->_value = n->_value + " | " + toFusionWith->_value;
+    } else if (n->_value.size() < toFusionWith->_value.size()) {
+        n->_value += n->_value;
+        fusionNode->_value =
+            n->_value + " | " + toFusionWith->_value;
+    } else {
+        toFusionWith->_value+= toFusionWith->_value;
+        fusionNode->_value =
+            n->_value + " | " + toFusionWith->_value;
+    }
+
+    //process with the table of truth
+    //"0-0,0-1,1-0,1-1"
+    if(table != ""){
+        std::vector<std::string> values;
+        size_t pos = 0;
+        
+        while ((pos = fusionNode->_value.find(" | ")) != std::string::npos) {
+            std::string token = "";
+            token = fusionNode->_value.substr(0, pos);
+
+            values.emplace_back(token);
+            fusionNode->_value.erase(0, pos + std::string(" | ").length());
+        }
+        values.emplace_back(fusionNode->_value);
+
+        fusionNode->_value = "";
+        for(size_t i(0); i < values[0].length(); ++i) {
+            if(values[0] == "0" && values[1] == "0"){
+                fusionNode->_value += table[0];
+            } else if(values[0] == "0" && values[1] == "1"){
+                fusionNode->_value += table[1];
+            } else if(values[0] == "1" && values[1] == "0"){
+                fusionNode->_value += table[2];
+            } else if(values[0] == "1" && values[1] == "1"){
+                fusionNode->_value += table[3];
+            }
+        }
+    }
+
+    if (n->_leftChild != nullptr || toFusionWith->_leftChild != nullptr) {
+        fusionNode->_leftChild = newNode(nullptr, nullptr, "");
+        if (n->_leftChild == nullptr) {
+            fusionBDDAux(n, toFusionWith->_leftChild, fusionNode->_leftChild, table);
+        } else if (toFusionWith->_leftChild == nullptr) {
+            fusionBDDAux(n->_leftChild, toFusionWith, fusionNode->_leftChild, table);
+        } else {
+            fusionBDDAux(n->_leftChild, toFusionWith->_leftChild,
+                         fusionNode->_leftChild, table);
+        }
+    }
+    if (n->_rightChild != nullptr || toFusionWith->_rightChild != nullptr) {
+        fusionNode->_rightChild = newNode(nullptr, nullptr, "");
+        if (n->_rightChild == nullptr) {
+            fusionBDDAux(n, toFusionWith->_rightChild, fusionNode->_rightChild, table);
+        } else if (toFusionWith->_rightChild == nullptr) {
+            fusionBDDAux(n->_rightChild, toFusionWith, fusionNode->_rightChild, table);
+        } else {
+            fusionBDDAux(n->_rightChild, toFusionWith->_rightChild,
+                         fusionNode->_rightChild, table);
+        }
+    }
+}
+                                        //"0-0,0-1,1-0,1-1"
+void Tree::FusionBDD(Tree &toFusionWith, std::string table) {
+    /*uncompressing our trees because we need deletation rules off for an easier work tree*/
+    this->UncompressionBDD();
+    toFusionWith.UncompressionBDD();
+
+    Node *fusionNode = newNode(nullptr, nullptr, "");
+    _words.clear();
+    fusionBDDAux(_root, toFusionWith._root, fusionNode, table);
+    _root = fusionNode;
+}
+
+void Tree::lukaFusionnedAux(Node *&n) {
+    // If we are on leafs
+    if (n->_leftChild == nullptr) {
+        if (_words.find(n->_value) == _words.end()) {
+            // not found
+            _words[n->_value] = n;
+        }
+        return;
+    }
+
+    if (_words.find(n->_value) == _words.end()) {
+        // not found
+        _words[n->_value] = n;
+        // std::cout << n->_value << std::endl;
+    }
+
+    lukaFusionnedAux(n->_leftChild);
+
+    lukaFusionnedAux(n->_rightChild);
+}
+
+void Tree::uncompressionBDDAux(Node *&n) {
+    if (n == nullptr) {
+        return;
+    }
+
+    if (n->_leftChild != nullptr) {
+        auto current = n;
+        while(current->_leftChild->_value.length() < current->_value.length()/2) {
+            auto tmp = current->_leftChild;
+            current->_leftChild = newNode(tmp, tmp, tmp->_value + tmp->_value);
+        }
+    }
+    if (n->_rightChild != nullptr) {
+        auto current = n;
+        while(current->_rightChild->_value.length() < current->_value.length()/2) {
+            auto tmp = current->_rightChild;
+            current->_rightChild = newNode(tmp, tmp, tmp->_value + tmp->_value);
+        }
+    }
+    uncompressionBDDAux(n->_leftChild);
+    uncompressionBDDAux(n->_rightChild);
+}
+
+void Tree::UncompressionBDD() { uncompressionBDDAux(_root); }
