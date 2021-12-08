@@ -156,7 +156,7 @@ writting, 3 boolean to indicate if we want to put luka's word as label
 Define all nodes in our dot file with the adresse of each node. We are
 labelling them with the current height of a node.
 */
-void Tree::defineInDot(Node *&n, int height, std::ofstream &f, bool withWords) {
+void Tree::defineInDot(Node *&n, std::ofstream &f, bool withWords) {
     if (n == nullptr) {
         return;
     }
@@ -167,13 +167,27 @@ void Tree::defineInDot(Node *&n, int height, std::ofstream &f, bool withWords) {
     std::string name = ss.str();
     name = "_" + name + "_";
 
+    int height = 0;
+    if (n->_value.find("|") != std::string::npos) {
+        std::string delimiter = ">=";
+        std::string token = n->_value.substr(0, n->_value.find(" | "));
+        height = getTreeHeightFromWidth(token.length());
+    } else {
+        height = getTreeHeightFromWidth(n->_value.length());
+    }
+
     std::string toWrite = "";
     if (withWords) {
+         if (n->_leftChild == nullptr && n->_rightChild == nullptr) {
+            toWrite = name + "[label=\"[" +
+                      n->_value + "]\"];";
+        } else {
         toWrite = name + "[label=\"x" + std::to_string(height) + " [" +
                   n->_value + "]\"];";
+        }
     } else {
         if (n->_leftChild == nullptr && n->_rightChild == nullptr) {
-            toWrite = name + "[label=\"x" + std::to_string(height) + " [" +
+            toWrite = name + "[label=\"[" +
                       n->_value + "]\"];";
         } else {
             toWrite = name + "[label=\"x" + std::to_string(height) + "\"];";
@@ -181,9 +195,9 @@ void Tree::defineInDot(Node *&n, int height, std::ofstream &f, bool withWords) {
     }
 
     f << toWrite;
-    defineInDot(n->_leftChild, height - 1, f, withWords);
+    defineInDot(n->_leftChild, f, withWords);
 
-    defineInDot(n->_rightChild, height - 1, f, withWords);
+    defineInDot(n->_rightChild, f, withWords);
 }
 
 /*
@@ -252,9 +266,7 @@ void Tree::Dot(std::string name, bool withWords) {
     if (dotFile.is_open()) {
         dotFile << "digraph{";
 
-        int height = getTreeHeightFromWidth(_root->_value.size());
-
-        defineInDot(_root, height, dotFile, withWords);
+        defineInDot(_root, dotFile, withWords);
 
         linkInDot(_root, dotFile, marked);
 
@@ -304,19 +316,23 @@ void Tree::compressionBDDAux(Node *&n, Node *&parent, int from) {
     //std::cout << n->_value << std::endl;
     // then the deletion rule
     if (n->_leftChild != nullptr && n->_rightChild != nullptr &&
-        n->_leftChild->_value == n->_rightChild->_value) {
+        n->_leftChild->_value == n->_rightChild->_value && from != NOTHING) {
         /*if (from == NOTHING) { // if we want to cut the head in case of
         double same son of the root n = n->_leftChild; } else */
+
+        //update lukas map
+        _words.erase(n->_value);
+        auto cpy = n;
         if (from == LEFT) {
             parent->_leftChild = n->_leftChild;
-
         } else if (from == RIGHT) {
             parent->_rightChild = n->_rightChild;
-            // delete n->_rightChild;
         }
-        // if n not in our word map
-        if (_words.find(n->_value) == _words.end()) delete n;
+        delete cpy;
+            
     }
+
+
 
     //compress init
     if (n != _words[n->_value]) {
@@ -330,10 +346,44 @@ void Tree::compressionBDDAux(Node *&n, Node *&parent, int from) {
 // of a class member
 void Tree::CompressionBDD() { compressionBDDAux(_root, _root, NOTHING); }
 
-void Tree::fusionBDDAux(Node *&n, Node *&toFusionWith, Node *&fusionNode, std::string table) {
+void Tree::fusionBDDAux(Node *&n, Node *&toFusionWith, Node *&fusionNode, std::string &table) {
     if (n == nullptr) {
         return;
     }
+
+    /*RECONSTRUCT MISSING NODES*/
+    if (n->_leftChild != nullptr) {
+        auto current = n;
+        while(current->_leftChild->_value.length() < current->_value.length()/2) {
+            auto tmp = current->_leftChild;
+            current->_leftChild = newNode(tmp, tmp, tmp->_value + tmp->_value);
+        }
+    }
+    if (n->_rightChild != nullptr) {
+        auto current = n;
+        while(current->_rightChild->_value.length() < current->_value.length()/2) {
+            auto tmp = current->_rightChild;
+            current->_rightChild = newNode(tmp, tmp, tmp->_value + tmp->_value);
+        }
+    }
+    
+    if (toFusionWith->_leftChild != nullptr) {
+        auto current = toFusionWith;
+        while(current->_leftChild->_value.length() < current->_value.length()/2) {
+            auto tmp = current->_leftChild;
+            current->_leftChild = newNode(tmp, tmp, tmp->_value + tmp->_value);
+        }
+    }
+    if (toFusionWith->_rightChild != nullptr) {
+        auto current = toFusionWith;
+        while(current->_rightChild->_value.length() < current->_value.length()/2) {
+            auto tmp = current->_rightChild;
+            current->_rightChild = newNode(tmp, tmp, tmp->_value + tmp->_value);
+        }
+    }
+    /*RECONSTRUCT MISSING NODES -- END*/
+
+
 
     if (n->_value.size() == toFusionWith->_value.size()) {
         fusionNode->_value = n->_value + " | " + toFusionWith->_value;
@@ -398,12 +448,13 @@ void Tree::fusionBDDAux(Node *&n, Node *&toFusionWith, Node *&fusionNode, std::s
                          fusionNode->_rightChild, table);
         }
     }
+    
 }
                                         //"0-0,0-1,1-0,1-1"
 void Tree::FusionBDD(Tree &toFusionWith, std::string table) {
     /*uncompressing our trees because we need deletation rules off for an easier work tree*/
-    this->UncompressionBDD();
-    toFusionWith.UncompressionBDD();
+    //this->UncompressionBDD();
+    //toFusionWith.UncompressionBDD();
 
     Node *fusionNode = newNode(nullptr, nullptr, "");
     _words.clear();

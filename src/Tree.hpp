@@ -57,14 +57,14 @@ class Tree {
 
     void compressAux(Node *&n);
 
-    void defineInDot(Node *&n, int height, std::ofstream &f, bool withWords);
+    void defineInDot(Node *&n, std::ofstream &f, bool withWords);
 
     void linkInDot(Node *&n, std::ofstream &f,
                    std::unordered_set<Node *> &marked);
 
     void compressionBDDAux(Node *&n, Node *&parent, int leftChild);
 
-    void fusionBDDAux(Node *&n, Node *&toFusionWith, Node *&fusionNode, std::string table);
+    void fusionBDDAux(Node *&n, Node *&toFusionWith, Node *&fusionNode, std::string &table);
 
     void lukaFusionnedAux(Node *&n);
 
