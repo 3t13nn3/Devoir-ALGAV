@@ -11,7 +11,7 @@ arg: 0 Initial Tree, 1 Height of the tree, 2 table of truth
 Create a Tree of a Height "height", based on DFS, putting the table of truth
 value at leafs
 */
-void Tree::createTreeFromTable(Node *&tree, int height, std::string &table) {
+void Tree::createTreeFromTable(std::shared_ptr<Node>&tree, int height, std::string &table) {
     if (height == 0) {
         tree->_value = table[0];
 
@@ -39,7 +39,7 @@ void Tree::ConsArbre(std::string &table) {
 arg: 0 Root node
 Free all the children of a given node
 */
-void Tree::FreeAllChildren(Node *&n) {
+void Tree::FreeAllChildren(std::shared_ptr<Node>&n) {
     if (n == nullptr) {
         return;
     }
@@ -49,7 +49,7 @@ void Tree::FreeAllChildren(Node *&n) {
     FreeAllChildren(n->_rightChild);
 
     // n = nullptr;
-    delete n;
+    //delete n;
     // n = nullptr;
 }
 
@@ -57,7 +57,7 @@ void Tree::FreeAllChildren(Node *&n) {
 arg: 0 the root, 1 stage of the node (call it with 0, a root is always as 0)
 Print all the children of a given node
 */
-void Tree::printAllChildrenAux(Node *&n, int stage) {
+void Tree::printAllChildrenAux(std::shared_ptr<Node>&n, int stage) {
     if (n == nullptr) {
         return;
     }
@@ -84,7 +84,7 @@ arg: 0 Node to applied luka function (the root generaly)
 Assign a Luka's word for each node and fill our _words map with the nodes we
 browse. Based on BFS.
 */
-void Tree::lukaAux(Node *&n) {
+void Tree::lukaAux(std::shared_ptr<Node>&n) {
     // If we are on leafs
     if (n->_leftChild == nullptr) {
         if (_words.find(n->_value) == _words.end()) {
@@ -127,7 +127,7 @@ Check for each node the associate node of the current Luka's word in our map
 (_words). If nodes aren't the same, we assign the node in the map to the
 current node. Based on BFS.
 */
-void Tree::compressAux(Node *&n) {
+void Tree::compressAux(std::shared_ptr<Node>&n) {
     if (n == nullptr) {
         return;
     }
@@ -139,7 +139,7 @@ void Tree::compressAux(Node *&n) {
     if (n != _words[n->_value]) {
         auto tmp = n;
         n = _words[n->_value];
-        delete tmp;
+        //delete tmp;
     }
 }
 
@@ -156,12 +156,12 @@ writting, 3 boolean to indicate if we want to put luka's word as label
 Define all nodes in our dot file with the adresse of each node. We are
 labelling them with the current height of a node.
 */
-void Tree::defineInDot(Node *&n, std::ofstream &f, bool withWords) {
+void Tree::defineInDot(std::shared_ptr<Node>&n, std::ofstream &f, bool withWords) {
     if (n == nullptr) {
         return;
     }
 
-    const void *address = static_cast<const void *>(n);
+    const void *address = static_cast<const void *>(n.get());
     std::stringstream ss;
     ss << address;
     std::string name = ss.str();
@@ -206,8 +206,8 @@ we have already process Link every nodes to theire child in the dot file.
 Based on nodes adresses. We need to check if we have already process a node
 to avoid multiple link.
 */
-void Tree::linkInDot(Node *&n, std::ofstream &f,
-                     std::unordered_set<Node *> &marked) {
+void Tree::linkInDot(std::shared_ptr<Node>&n, std::ofstream &f,
+                     std::unordered_set<std::shared_ptr<Node>> &marked) {
     if (n == nullptr) {
         return;
     }
@@ -216,14 +216,14 @@ void Tree::linkInDot(Node *&n, std::ofstream &f,
 
         marked.insert(n);
 
-        const void *address = static_cast<const void *>(n);
+        const void *address = static_cast<const void *>(n.get());
         std::stringstream ss;
         ss << address;
         std::string father = ss.str();
         father = "_" + father + "_";
 
         if (n->_leftChild != nullptr) {
-            const void *address = static_cast<const void *>(n->_leftChild);
+            const void *address = static_cast<const void *>(n->_leftChild.get());
             std::stringstream ss;
             ss << address;
             std::string child = ss.str();
@@ -234,7 +234,7 @@ void Tree::linkInDot(Node *&n, std::ofstream &f,
         }
 
         if (n->_rightChild != nullptr) {
-            const void *address = static_cast<const void *>(n->_rightChild);
+            const void *address = static_cast<const void *>(n->_rightChild.get());
             std::stringstream ss;
             ss << address;
             std::string child = ss.str();
@@ -261,7 +261,7 @@ void Tree::Dot(std::string name, bool withWords) {
     system("mkdir ../tree");
     std::ofstream dotFile("../tree/" + name + ".dot");
 
-    std::unordered_set<Node *> marked;
+    std::unordered_set<std::shared_ptr<Node>> marked;
 
     if (dotFile.is_open()) {
         dotFile << "digraph{";
@@ -303,7 +303,7 @@ the deletion rule that say if both childs of a node have the same value
 (then are the same because we replaced them by the associate map value), so
 we could remove it ant link there father to there child Based on BFS.
 */
-void Tree::compressionBDDAux(Node *&n, Node *&parent, int from) {
+void Tree::compressionBDDAux(std::shared_ptr<Node>&n, std::shared_ptr<Node>&parent, int from) {
     if (n == nullptr) {
         return;
     }
@@ -328,7 +328,7 @@ void Tree::compressionBDDAux(Node *&n, Node *&parent, int from) {
         } else if (from == RIGHT) {
             parent->_rightChild = n->_rightChild;
         }
-        delete cpy;
+        //delete cpy;
             
     }
 
@@ -338,7 +338,7 @@ void Tree::compressionBDDAux(Node *&n, Node *&parent, int from) {
     if (n != _words[n->_value]) {
         auto tmp = n;
         n = _words[n->_value];
-        delete tmp;
+        //delete tmp;
     }
 }
 
@@ -346,7 +346,7 @@ void Tree::compressionBDDAux(Node *&n, Node *&parent, int from) {
 // of a class member
 void Tree::CompressionBDD() { compressionBDDAux(_root, _root, NOTHING); }
 
-void Tree::fusionBDDAux(Node *&n, Node *&toFusionWith, Node *&fusionNode, std::string &table) {
+void Tree::fusionBDDAux(std::shared_ptr<Node>&n, std::shared_ptr<Node>&toFusionWith, std::shared_ptr<Node>&fusionNode, std::string &table) {
     if (n == nullptr) {
         return;
     }
@@ -456,13 +456,13 @@ void Tree::FusionBDD(Tree &toFusionWith, std::string table) {
     //this->UncompressionBDD();
     //toFusionWith.UncompressionBDD();
 
-    Node *fusionNode = newNode(nullptr, nullptr, "");
+    std::shared_ptr<Node>fusionNode = newNode(nullptr, nullptr, "");
     _words.clear();
     fusionBDDAux(_root, toFusionWith._root, fusionNode, table);
     _root = fusionNode;
 }
 
-void Tree::lukaFusionnedAux(Node *&n) {
+void Tree::lukaFusionnedAux(std::shared_ptr<Node>&n) {
     // If we are on leafs
     if (n->_leftChild == nullptr) {
         if (_words.find(n->_value) == _words.end()) {
@@ -483,7 +483,7 @@ void Tree::lukaFusionnedAux(Node *&n) {
     lukaFusionnedAux(n->_rightChild);
 }
 
-void Tree::uncompressionBDDAux(Node *&n) {
+void Tree::uncompressionBDDAux(std::shared_ptr<Node>&n) {
     if (n == nullptr) {
         return;
     }
@@ -507,3 +507,12 @@ void Tree::uncompressionBDDAux(Node *&n) {
 }
 
 void Tree::UncompressionBDD() { uncompressionBDDAux(_root); }
+
+int Tree::CountNode(){
+    int n = 0;
+    for(const auto &e : _words){
+        if(e.first.size() != 1)
+            ++n;
+    }
+    return n;
+}

@@ -3,8 +3,8 @@
 /*
 Creating a new empty node
 */
-Node* newNode(Node* left, Node* right, std::string value) {
-    Node* toReturn = new Node;
+std::shared_ptr<Node> newNode(std::shared_ptr<Node> left, std::shared_ptr<Node> right, std::string value) {
+    std::shared_ptr<Node> toReturn = std::make_shared<Node>();
 
     toReturn->_leftChild = left;
     toReturn->_rightChild = right;
@@ -17,7 +17,7 @@ Node* newNode(Node* left, Node* right, std::string value) {
 arg: 0 Initial Tree, 1 Tree to add
 Insert a Tree in the Parents childrens
 */
-Node* insert(Node*& initTree, Node* treeToAdd) {
+std::shared_ptr<Node> insert(std::shared_ptr<Node>& initTree, std::shared_ptr<Node> treeToAdd) {
     if (initTree->_leftChild == nullptr) {
         initTree->_leftChild = treeToAdd;
     } else {

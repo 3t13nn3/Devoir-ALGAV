@@ -29,4 +29,4 @@ clean:
 	rm -f $(OBJS)
 
 cleanall:
-	rm -Rf $(OBJS) $(OUT) ../tree
+	rm -Rf $(OBJS) $(OUT) ../tree ../plot

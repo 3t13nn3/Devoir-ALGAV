@@ -24,7 +24,7 @@ class Tree {
 
     void ConsArbre(std::string &table);
 
-    void FreeAllChildren(Node *&n);
+    void FreeAllChildren(std::shared_ptr<Node>&n);
 
     void PrintAllChildren();
 
@@ -42,33 +42,35 @@ class Tree {
 
     void UncompressionBDD();
 
+    int CountNode();
+
    private:
     /****MEMBER VARIABLE****/
-    Node *_root;
+    std::shared_ptr<Node>_root;
     // Luka's words
-    std::unordered_map<std::string, Node *> _words;
+    std::unordered_map<std::string, std::shared_ptr<Node>> _words;
     /****END-MEMBER VARIABLE****/
 
-    void createTreeFromTable(Node *&tree, int height, std::string &table);
+    void createTreeFromTable(std::shared_ptr<Node>&tree, int height, std::string &table);
 
-    void printAllChildrenAux(Node *&n, int stage = 0);
+    void printAllChildrenAux(std::shared_ptr<Node>&n, int stage = 0);
 
-    void lukaAux(Node *&n);
+    void lukaAux(std::shared_ptr<Node>&n);
 
-    void compressAux(Node *&n);
+    void compressAux(std::shared_ptr<Node>&n);
 
-    void defineInDot(Node *&n, std::ofstream &f, bool withWords);
+    void defineInDot(std::shared_ptr<Node>&n, std::ofstream &f, bool withWords);
 
-    void linkInDot(Node *&n, std::ofstream &f,
-                   std::unordered_set<Node *> &marked);
+    void linkInDot(std::shared_ptr<Node>&n, std::ofstream &f,
+                   std::unordered_set<std::shared_ptr<Node>> &marked);
 
-    void compressionBDDAux(Node *&n, Node *&parent, int leftChild);
+    void compressionBDDAux(std::shared_ptr<Node>&n, std::shared_ptr<Node>&parent, int leftChild);
 
-    void fusionBDDAux(Node *&n, Node *&toFusionWith, Node *&fusionNode, std::string &table);
+    void fusionBDDAux(std::shared_ptr<Node>&n, std::shared_ptr<Node>&toFusionWith, std::shared_ptr<Node>&fusionNode, std::string &table);
 
-    void lukaFusionnedAux(Node *&n);
+    void lukaFusionnedAux(std::shared_ptr<Node>&n);
 
-    void uncompressionBDDAux(Node *&n);
+    void uncompressionBDDAux(std::shared_ptr<Node>&n);
 
 };
 }  // namespace ex2ex3
