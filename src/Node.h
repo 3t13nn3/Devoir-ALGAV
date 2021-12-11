@@ -11,8 +11,10 @@ struct node {
     std::shared_ptr<Node> _rightChild;
 };
 
-std::shared_ptr<Node> newNode(std::shared_ptr<Node> left, std::shared_ptr<Node> right, std::string value);
-std::shared_ptr<Node> insert(std::shared_ptr<Node>& initTree, std::shared_ptr<Node> treeToAdd);
+std::shared_ptr<Node> newNode(std::shared_ptr<Node> left,
+                              std::shared_ptr<Node> right, std::string value);
+std::shared_ptr<Node> insert(std::shared_ptr<Node>& initTree,
+                             std::shared_ptr<Node> treeToAdd);
 int getTreeHeightFromWidth(int width);
 
 #endif
