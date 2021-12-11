@@ -316,14 +316,14 @@ void Tree::compressionBDDAux(std::shared_ptr<Node>&n, std::shared_ptr<Node>&pare
     //std::cout << n->_value << std::endl;
     // then the deletion rule
     if (n->_leftChild != nullptr && n->_rightChild != nullptr &&
-        n->_leftChild->_value == n->_rightChild->_value && from != NOTHING) {
-        /*if (from == NOTHING) { // if we want to cut the head in case of
-        double same son of the root n = n->_leftChild; } else */
-
+        n->_leftChild->_value == n->_rightChild->_value) {
+        
         //update lukas map
         _words.erase(n->_value);
         auto cpy = n;
-        if (from == LEFT) {
+        if (from == NOTHING) { 
+            n = n->_leftChild; 
+        } else if (from == LEFT) {
             parent->_leftChild = n->_leftChild;
         } else if (from == RIGHT) {
             parent->_rightChild = n->_rightChild;
@@ -510,9 +510,8 @@ void Tree::UncompressionBDD() { uncompressionBDDAux(_root); }
 
 int Tree::CountNode(){
     int n = 0;
-    for(const auto &e : _words){
-        if(e.first.size() != 1)
-            ++n;
+    for(const auto &_ : _words){
+        ++n;
     }
     return n;
 }
