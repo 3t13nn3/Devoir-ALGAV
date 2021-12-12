@@ -8,25 +8,24 @@
 #include "Tree.hpp"
 
 void plot(int nbVariable, int nbTest = 100000) {
-    int max = (1 << nbVariable);
+    int lenghtBinaryNumber = (1 << nbVariable);
 
     system("mkdir ../plot");
 
     std::string filename = std::to_string(nbVariable) + "_variables";
     std::ofstream plotFile("../plot/" + filename + ".csv");
     std::map<int, int> count;
-
+    long long int numberOfVariable = (pow(2, pow(2, nbVariable)));
     std::string tableOfTruth = "";
 
-    if (nbVariable < 5) {
-        std::string toFind(max, '1');
-        for (int i(0);; ++i) {
+    auto start = std::chrono::high_resolution_clock::now();
+    if (nbVariable < 6) {
+        std::string toFind(lenghtBinaryNumber, '1');
+        for (long long int i(0); i < numberOfVariable; ++i) {
             mpz_class number(std::to_string(i), 10);
             ex1::TableOfTruth tof = ex1::TableOfTruth();
-            tableOfTruth = tof.Table(number, max);
-            if (!toFind.compare(0, max, tableOfTruth)) {
-                break;
-            }
+            tableOfTruth = tof.Table(number, lenghtBinaryNumber);
+
             ex2ex3::Tree myTree = ex2ex3::Tree();
 
             myTree.ConsArbre(tableOfTruth);
@@ -34,11 +33,21 @@ void plot(int nbVariable, int nbTest = 100000) {
             myTree.CompressionBDD();
             int nodeCount = myTree.CountNode();
             count[nodeCount]++;
+            //if (i % 1000000 == 0) {
+                auto elapsed =
+                    std::chrono::high_resolution_clock::now() - start;
+                long long seconds =
+                    std::chrono::duration_cast<std::chrono::seconds>(elapsed)
+                        .count();
+                if(seconds > 0)
+                    std::cout << i << " / " << numberOfVariable << "\t"
+                            << (i * 100) / numberOfVariable << "%"
+                            << "\t" << seconds << "s"
+                            << "\tEstimated: " << (numberOfVariable*seconds)/i << "s" << std::endl;
+            //}
+            // system("clear");
         }
 
-        // we know 1111 have only one nodes and we break just befor then
-        // assigning it
-        count[1]++;
         for (const auto &e : count) {
             plotFile << std::to_string(e.first) << "\t"
                      << std::to_string(e.second) << "\n";
@@ -49,7 +58,7 @@ void plot(int nbVariable, int nbTest = 100000) {
         srand(time(NULL));
 
         for (int i(0); i < nbTest; ++i) {
-            std::string random(max, '1');
+            std::string random(lenghtBinaryNumber, '1');
             for (size_t i(0); i < random.size(); ++i) {
                 random[i] = std::to_string(rand() % 2)[0];
             }
@@ -62,7 +71,7 @@ void plot(int nbVariable, int nbTest = 100000) {
             pickedNumbers.insert(random);
             mpz_class number(random, 10);
             ex1::TableOfTruth tof = ex1::TableOfTruth();
-            tableOfTruth = tof.Table(number, max);
+            tableOfTruth = tof.Table(number, lenghtBinaryNumber);
             // std::cout << tableOfTruth << std::endl;
             ex2ex3::Tree myTree = ex2ex3::Tree();
 
@@ -73,10 +82,15 @@ void plot(int nbVariable, int nbTest = 100000) {
             count[nodeCount]++;
         }
 
+        auto elapsed = std::chrono::high_resolution_clock::now() - start;
+        long long seconds =
+            std::chrono::duration_cast<std::chrono::seconds>(elapsed).count();
+
         if (nbVariable < 10) {
             for (const auto &e : count) {
                 plotFile << std::to_string((long int)(e.first)) << "\t"
-                         << std::to_string((long int)e.second * (pow(2, max)) /
+                         << std::to_string((long int)e.second *
+                                           (pow(2, lenghtBinaryNumber)) /
                                            nbTest)
                          << "\n";
             }
@@ -84,7 +98,7 @@ void plot(int nbVariable, int nbTest = 100000) {
             /* need to avoid normal type because with 10 variables can't handle
              */
             mpz_class nb;
-            mpz_ui_pow_ui(nb.get_mpz_t(), 2, max);
+            mpz_ui_pow_ui(nb.get_mpz_t(), 2, lenghtBinaryNumber);
             mpz_class test(std::to_string(nbTest), 10);
             for (const auto &e : count) {
                 mpz_class second(std::to_string(e.second), 10);
@@ -95,9 +109,6 @@ void plot(int nbVariable, int nbTest = 100000) {
                          << actual << "\n";
             }
         }
-
-        // plotFile << std::to_string((long int)(e.first)) << "\t" <<
-        // std::to_string((long int)e.second * (pow(2, max)) / nbTest) << "\n";
     }
 
     plotFile.close();
@@ -124,8 +135,9 @@ int main(int argc, char **argv) {
         input = "38";
     }
 
-    // plot(5);
-    for (int i(1); i <= 10; ++i) plot(i);
+    plot(5);
+
+    // for (int i(1); i <= 10; ++i) plot(i);
     /*
         // We creating our number from our string in base 10
         mpz_class number(input, 10);
