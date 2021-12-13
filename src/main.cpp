@@ -10,7 +10,7 @@
 void plot(int nbVariable, int nbTest = 100000) {
     int lenghtBinaryNumber = (1 << nbVariable);
 
-    system("mkdir ../plot");
+    system("mkdir -p ../plot");
 
     std::string filename = std::to_string(nbVariable) + "_variables";
     std::ofstream plotFile("../plot/" + filename + ".csv");
@@ -18,35 +18,43 @@ void plot(int nbVariable, int nbTest = 100000) {
     long long int numberOfVariable = (pow(2, pow(2, nbVariable)));
     std::string tableOfTruth = "";
 
+    double ROBDDtime = 0;
     auto start = std::chrono::high_resolution_clock::now();
-    if (nbVariable < 6) {
+
+    if (nbVariable < 5) {
         std::string toFind(lenghtBinaryNumber, '1');
         for (long long int i(0); i < numberOfVariable; ++i) {
             mpz_class number(std::to_string(i), 10);
             ex1::TableOfTruth tof = ex1::TableOfTruth();
             tableOfTruth = tof.Table(number, lenghtBinaryNumber);
 
+            /* construct robdd */
+            auto s = std::chrono::high_resolution_clock::now();
+            
             ex2ex3::Tree myTree = ex2ex3::Tree();
-
             myTree.ConsArbre(tableOfTruth);
             myTree.Luka();
             myTree.CompressionBDD();
+
+            auto e = std::chrono::high_resolution_clock::now() - s;
+            ROBDDtime +=
+                std::chrono::duration_cast<std::chrono::microseconds>(e)
+                    .count();
+
             int nodeCount = myTree.CountNode();
             count[nodeCount]++;
-            //if (i % 1000000 == 0) {
-                auto elapsed =
-                    std::chrono::high_resolution_clock::now() - start;
-                long long seconds =
-                    std::chrono::duration_cast<std::chrono::seconds>(elapsed)
-                        .count();
-                if(seconds > 0)
-                    std::cout << i << " / " << numberOfVariable << "\t"
-                            << (i * 100) / numberOfVariable << "%"
-                            << "\t" << seconds << "s"
-                            << "\tEstimated: " << (numberOfVariable*seconds)/i << "s" << std::endl;
-            //}
-            // system("clear");
         }
+
+        auto elapsed = std::chrono::high_resolution_clock::now() - start;
+        double microseconds =
+            std::chrono::duration_cast<std::chrono::microseconds>(elapsed)
+                .count();
+        std::cout << "| NbVariable: " << nbVariable
+                  << "\t| NbSamples: " << numberOfVariable
+                  << "\t| UniqueSize: " << count.size()
+                  << "\t| Time: " << microseconds / 1000000.f << " s"
+                  << "\t| TimePerROBDD: " << (ROBDDtime / numberOfVariable) << " µs\t|"
+                  << std::endl;
 
         for (const auto &e : count) {
             plotFile << std::to_string(e.first) << "\t"
@@ -72,19 +80,32 @@ void plot(int nbVariable, int nbTest = 100000) {
             mpz_class number(random, 10);
             ex1::TableOfTruth tof = ex1::TableOfTruth();
             tableOfTruth = tof.Table(number, lenghtBinaryNumber);
-            // std::cout << tableOfTruth << std::endl;
-            ex2ex3::Tree myTree = ex2ex3::Tree();
 
+            /* construct robdd */
+            auto s = std::chrono::high_resolution_clock::now();
+            ex2ex3::Tree myTree = ex2ex3::Tree();
             myTree.ConsArbre(tableOfTruth);
             myTree.Luka();
             myTree.CompressionBDD();
+            auto e = std::chrono::high_resolution_clock::now() - s;
+            ROBDDtime +=
+                std::chrono::duration_cast<std::chrono::microseconds>(e)
+                    .count();
+
             int nodeCount = myTree.CountNode();
             count[nodeCount]++;
         }
 
         auto elapsed = std::chrono::high_resolution_clock::now() - start;
-        long long seconds =
-            std::chrono::duration_cast<std::chrono::seconds>(elapsed).count();
+        double microseconds =
+            std::chrono::duration_cast<std::chrono::microseconds>(elapsed)
+                .count();
+        std::cout << "| NbVariable: " << nbVariable
+                  << "\t| NbSamples: " << nbTest
+                  << "\t| UniqueSize: " << count.size()
+                  << "\t| Time: " << microseconds / 1000000.f << " s"
+                  << "\t| TimePerROBDD: " << (ROBDDtime / nbTest) << " µs\t|"
+                  << std::endl;
 
         if (nbVariable < 10) {
             for (const auto &e : count) {
@@ -121,7 +142,7 @@ void plot(int nbVariable, int nbTest = 100000) {
             "functions\" font \",12\";plot \"../plot/" +
             filename +
             ".csv\" using 1:2 with lp pt 7 lt 2 linewidth 2 title \"\""
-            "'")
+            "' 2>/dev/null ")
                .c_str());
 }
 
@@ -135,56 +156,59 @@ int main(int argc, char **argv) {
         input = "38";
     }
 
-    plot(5);
+    /* PLOT */
+    // plot(5);
+    for (int i(1); i <= 10; ++i) plot(i);
 
-    // for (int i(1); i <= 10; ++i) plot(i);
-    /*
-        // We creating our number from our string in base 10
-        mpz_class number(input, 10);
-        std::cout << "Actual number is : " << number << std::endl;
+    // We creating our number from our string in base 10
+    mpz_class number(input, 10);
+    std::cout << "Actual number is : " << number << std::endl;
 
-        // Question 1
-        ex1::TableOfTruth tof = ex1::TableOfTruth();
-        // 1<<n == 2^n;
-        std::string tableOfTruth = tof.Table(number, 1 << 8);
-        std::string tableOfTruthCpy = tableOfTruth;
-        // std::cout << tableOfTruth << std::endl;
+    // Question 1
+    ex1::TableOfTruth tof = ex1::TableOfTruth();
+    // 1<<n == 2^n;
+    std::string tableOfTruth = tof.Table(number, 1 << 5);
+    std::string tableOfTruthCpy = tableOfTruth;
+    // std::cout << tableOfTruth << std::endl;
 
-        auto start = std::chrono::high_resolution_clock::now();
-        // Question 2
-        ex2ex3::Tree tree1 = ex2ex3::Tree();
-        tree1.ConsArbre(tableOfTruth);
-        tree1.Luka();
-        tree1.CompressionBDD();
-        auto elapsed = std::chrono::high_resolution_clock::now() - start;
-        long long microseconds =
-            std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
-        std::cout << microseconds << "µs" << std::endl;
-        tree1.PrintLukaMap();
-        // tree1.PrintAllChildren();
+    auto start = std::chrono::high_resolution_clock::now();
+    // Question 2
+    ex2ex3::Tree tree1 = ex2ex3::Tree();
+    tree1.ConsArbre(tableOfTruth);
+    tree1.Luka();
 
-        std::cout << "Creating compressed.dot" << std::endl;
-        tree1.Dot("compressed", false);
-     */
-    /*
-        tof = ex1::TableOfTruth();  //// 61152
-        tableOfTruth = tof.Table(mpz_class("28662", 10), 1 << 4);
+    /*std::cout << "Creating init.dot" << std::endl;
+    tree1.Dot("init");*/
 
-        ex2ex3::Tree tree2 = ex2ex3::Tree();
-        tree2.ConsArbre(tableOfTruth);
-        tree2.Luka();
-        // tree2.Compress();
-        tree2.CompressionBDD();
-        tree2.Dot("compressedBDD");
+    tree1.CompressionBDD();
+    auto elapsed = std::chrono::high_resolution_clock::now() - start;
+    long long microseconds =
+        std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
+    std::cout << microseconds << "µs" << std::endl;
+    // tree1.PrintLukaMap();
+    // tree1.PrintAllChildren();
 
-        // Table of truth of AND '0001'
-        tree1.FusionBDD(tree2);
+    std::cout << "Creating compressed.dot" << std::endl;
+    tree1.Dot("compressed");
 
-        tree1.Luka();
+    tof = ex1::TableOfTruth();  //// 61152
+    tableOfTruth = tof.Table(mpz_class("28662", 10), 1 << 2);
 
-        tree1.CompressionBDD();
+    ex2ex3::Tree tree2 = ex2ex3::Tree();
+    tree2.ConsArbre(tableOfTruth);
+    tree2.Luka();
+    // tree2.Compress();
+    tree2.CompressionBDD();
+    tree2.Dot("compressed2");
 
-        tree1.Dot("Fusion");
-    */
+    // Table of truth of AND '0001'
+    tree1.FusionBDD(tree2);
+
+    tree1.Luka();
+
+    tree1.CompressionBDD();
+
+    tree1.Dot("Fusion");
+
     exit(0);
 }

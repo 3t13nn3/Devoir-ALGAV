@@ -260,7 +260,7 @@ void Tree::Dot(std::string name, bool withWords) {
     // exemple:
     // digraph{a->bb[style=dashed];b[label=\"som1\"];b->c[labal="som1"];a->c;d->c;e->c;e->a;}
 
-    system("mkdir ../tree");
+    system("mkdir -p ../tree");
     std::ofstream dotFile("../tree/" + name + ".dot");
 
     std::unordered_set<std::shared_ptr<Node>> marked;
@@ -460,7 +460,30 @@ void Tree::FusionBDD(Tree &toFusionWith, std::string table) {
     // toFusionWith.UncompressionBDD();
 
     std::shared_ptr<Node> fusionNode = newNode(nullptr, nullptr, "");
+
+    /* IF ROBBD ARE NOT FROM THE SAME SIZE WE RETRIEVE A HEAD THAT HAVE A LENGHT
+     * OF THE OTHER*/
+    while (_root->_value.length() < toFusionWith._root->_value.length()) {
+        auto tmp = _root;
+        _root = newNode(tmp,
+                        newNode(_words["0"], _words["0"],
+                                std::string(tmp->_value.length(), '0')),
+                        tmp->_value + std::string(tmp->_value.length(), '0'));
+    }
+
+    while (toFusionWith._root->_value.length() < _root->_value.length()) {
+        auto tmp = toFusionWith._root;
+        toFusionWith._root =
+            newNode(tmp,
+                    newNode(_words["0"], _words["0"],
+                            std::string(tmp->_value.length(), '0')),
+                    tmp->_value + std::string(tmp->_value.length(), '0'));
+    }
+
+    
+
     _words.clear();
+
     fusionBDDAux(_root, toFusionWith._root, fusionNode, table);
     _root = fusionNode;
 }
