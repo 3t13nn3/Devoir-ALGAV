@@ -1,6 +1,5 @@
 #include "BTrie.hpp"
 
-#include <iostream>
 BTrie::BTrie() {
     for (int i = 0; i < 2; ++i) {
         _number[i] = nullptr;
@@ -29,10 +28,6 @@ void BTrie::CheckAndInsert(const std::shared_ptr<Node> &n) {
 }
 
 std::shared_ptr<Node> BTrie::Find(std::string key) {
-    if (_number == nullptr) {
-        return nullptr;
-    }
-
     auto curr = this;
 
     for (size_t i = 0; i < key.size(); i++) {
@@ -74,10 +69,6 @@ void BTrie::Display() {
 }
 
 void BTrie::Remove(std::string &key) {
-    if (_number == nullptr) {
-        return;
-    }
-
     auto curr = this;
 
     for (size_t i = 0; i < key.size(); i++) {

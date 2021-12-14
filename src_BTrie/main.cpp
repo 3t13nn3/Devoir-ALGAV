@@ -158,8 +158,8 @@ int main(int argc, char **argv) {
     }
 
     /* PLOT */
-    //plot(5);
-    //for (int i(1); i <= 10; ++i) plot(i);
+    plot(5);
+    // for (int i(1); i <= 10; ++i) plot(i);
 
     // We creating our number from our string in base 10
     mpz_class number(input, 10);
@@ -172,7 +172,6 @@ int main(int argc, char **argv) {
     std::string tableOfTruthCpy = tableOfTruth;
     // std::cout << tableOfTruth << std::endl;
 
-    auto start = std::chrono::high_resolution_clock::now();
     // Question 2
     ex2ex3::Tree tree1 = ex2ex3::Tree();
     tree1.ConsArbre(tableOfTruth);
@@ -182,7 +181,7 @@ int main(int argc, char **argv) {
     tree1.Dot("init");
 
     tree1.CompressionBDD();
-    tree1.PrintLukaBTrie();
+    // tree1.PrintLukaBTrie();
 
     std::cout << "Creating compressed.dot" << std::endl;
     tree1.Dot("compressed");

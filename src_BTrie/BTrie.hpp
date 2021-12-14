@@ -1,6 +1,7 @@
 #ifndef __BTRIE_HPP__
 #define __BTRIE_HPP__
 
+#include <iostream>
 #include <string>
 #include <vector>
 
