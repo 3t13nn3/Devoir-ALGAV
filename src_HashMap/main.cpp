@@ -30,7 +30,7 @@ void plot(int nbVariable, int nbTest = 100000) {
 
             /* construct robdd */
             auto s = std::chrono::high_resolution_clock::now();
-            
+
             ex2ex3::Tree myTree = ex2ex3::Tree();
             myTree.ConsArbre(tableOfTruth);
             myTree.Luka();
@@ -53,8 +53,8 @@ void plot(int nbVariable, int nbTest = 100000) {
                   << "\t| NbSamples: " << numberOfVariable
                   << "\t| UniqueSize: " << count.size()
                   << "\t| Time: " << microseconds / 1000000.f << " s"
-                  << "\t| TimePerROBDD: " << (ROBDDtime / numberOfVariable) << " µs\t|"
-                  << std::endl;
+                  << "\t| TimePerROBDD: " << (ROBDDtime / numberOfVariable)
+                  << " µs\t|" << std::endl;
 
         for (const auto &e : count) {
             plotFile << std::to_string(e.first) << "\t"
@@ -158,7 +158,7 @@ int main(int argc, char **argv) {
 
     /* PLOT */
     // plot(5);
-    for (int i(1); i <= 10; ++i) plot(i);
+    //for (int i(1); i <= 10; ++i) plot(i);
 
     // We creating our number from our string in base 10
     mpz_class number(input, 10);
