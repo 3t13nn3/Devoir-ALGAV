@@ -183,12 +183,6 @@ int main(int argc, char **argv) {
 
     tree1.CompressionBDD();
     tree1.PrintLukaBTrie();
-    auto elapsed = std::chrono::high_resolution_clock::now() - start;
-    long long microseconds =
-        std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
-    std::cout << microseconds << "µs" << std::endl;
-    // tree1.PrintLukaMap();
-    tree1.PrintAllChildren();
 
     std::cout << "Creating compressed.dot" << std::endl;
     tree1.Dot("compressed");

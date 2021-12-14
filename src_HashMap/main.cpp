@@ -167,11 +167,10 @@ int main(int argc, char **argv) {
     // Question 1
     ex1::TableOfTruth tof = ex1::TableOfTruth();
     // 1<<n == 2^n;
-    std::string tableOfTruth = tof.Table(number, 1 << 5);
+    std::string tableOfTruth = tof.Table(number, 1 << 3);
     std::string tableOfTruthCpy = tableOfTruth;
     // std::cout << tableOfTruth << std::endl;
 
-    auto start = std::chrono::high_resolution_clock::now();
     // Question 2
     ex2ex3::Tree tree1 = ex2ex3::Tree();
     tree1.ConsArbre(tableOfTruth);
@@ -181,10 +180,6 @@ int main(int argc, char **argv) {
     tree1.Dot("init");*/
 
     tree1.CompressionBDD();
-    auto elapsed = std::chrono::high_resolution_clock::now() - start;
-    long long microseconds =
-        std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
-    std::cout << microseconds << "µs" << std::endl;
     // tree1.PrintLukaMap();
     // tree1.PrintAllChildren();
 
@@ -192,7 +187,7 @@ int main(int argc, char **argv) {
     tree1.Dot("compressed");
 
     tof = ex1::TableOfTruth();  //// 61152
-    tableOfTruth = tof.Table(mpz_class("28662", 10), 1 << 2);
+    tableOfTruth = tof.Table(mpz_class("28662", 10), 1 << 4);
 
     ex2ex3::Tree tree2 = ex2ex3::Tree();
     tree2.ConsArbre(tableOfTruth);
