@@ -156,54 +156,33 @@ int main(int argc, char **argv) {
         input = "38";
     }
 
-    /* PLOT */
-    // plot(5);
-    //for (int i(1); i <= 10; ++i) plot(i);
+    // Generate plot
+    // for (int i(1); i < 11; ++i) plot(i);
 
-    // We creating our number from our string in base 10
-    mpz_class number(input, 10);
-    std::cout << "Actual number is : " << number << std::endl;
-
-    // Question 1
     ex1::TableOfTruth tof = ex1::TableOfTruth();
-    // 1<<n == 2^n;
-    std::string tableOfTruth = tof.Table(number, 1 << 3);
-    std::string tableOfTruthCpy = tableOfTruth;
-    // std::cout << tableOfTruth << std::endl;
+    //"61152"
+    std::string tableOfTruth1 = tof.Table(mpz_class(input, 10), 1 << 4);
+    std::string tableOfTruth2 = tof.Table(mpz_class("28662", 10), 1 << 4);
 
-    // Question 2
     ex2ex3::Tree tree1 = ex2ex3::Tree();
-    tree1.ConsArbre(tableOfTruth);
+    tree1.ConsArbre(tableOfTruth1);
     tree1.Luka();
-
-    /*std::cout << "Creating init.dot" << std::endl;
-    tree1.Dot("init");*/
-
     tree1.CompressionBDD();
-    // tree1.PrintLukaMap();
-    // tree1.PrintAllChildren();
-
-    std::cout << "Creating compressed.dot" << std::endl;
-    tree1.Dot("compressed");
-
-    tof = ex1::TableOfTruth();  //// 61152
-    tableOfTruth = tof.Table(mpz_class("28662", 10), 1 << 4);
+    std::cout << tree1.CountNode() << std::endl;
+    tree1.Dot("compressed1");
 
     ex2ex3::Tree tree2 = ex2ex3::Tree();
-    tree2.ConsArbre(tableOfTruth);
+    tree2.ConsArbre(tableOfTruth2);
     tree2.Luka();
-    // tree2.Compress();
     tree2.CompressionBDD();
     tree2.Dot("compressed2");
 
-    // Table of truth of AND '0001'
-    tree1.FusionBDD(tree2);
+    ex2ex3::Tree meldedTree = tree1.Meld(tree2);
 
-    tree1.Luka();
-
-    tree1.CompressionBDD();
-
-    tree1.Dot("Fusion");
+    meldedTree.Dot("melded");
+    meldedTree.Luka();
+    meldedTree.CompressionBDD();
+    meldedTree.Dot("melded_and_compressed");
 
     exit(0);
 }

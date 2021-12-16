@@ -4,7 +4,7 @@ using namespace ex2ex3;
 
 Tree::Tree() { _root = newNode(nullptr, nullptr, ""); }
 
-Tree::~Tree() { FreeAllChildren(_root); }
+Tree::Tree(std::shared_ptr<Node> &root) { _root = root; }
 
 /*
 arg: 0 Initial Tree, 1 Height of the tree, 2 table of truth
@@ -37,24 +37,6 @@ void Tree::ConsArbre(std::string &table) {
 }
 
 /*
-arg: 0 Root node
-Free all the children of a given node
-*/
-void Tree::FreeAllChildren(std::shared_ptr<Node> &n) {
-    if (n == nullptr) {
-        return;
-    }
-
-    FreeAllChildren(n->_leftChild);
-
-    FreeAllChildren(n->_rightChild);
-
-    // n = nullptr;
-    // delete n;
-    // n = nullptr;
-}
-
-/*
 arg: 0 the root, 1 stage of the node (call it with 0, a root is always as 0)
 Print all the children of a given node
 */
@@ -83,7 +65,7 @@ void Tree::PrintAllChildren() { printAllChildrenAux(_root); }
 /*
 arg: 0 Node to applied luka function (the root generaly)
 Assign a Luka's word for each node and fill our _words map with the nodes we
-browse. Based on BFS.
+browse. Based on DFS.
 */
 void Tree::lukaAux(std::shared_ptr<Node> &n) {
     // If we are on leafs
@@ -108,7 +90,6 @@ void Tree::lukaAux(std::shared_ptr<Node> &n) {
     if (_words.find(n->_value) == _words.end()) {
         // not found
         _words[n->_value] = n;
-        // std::cout << n->_value << std::endl;
     }
 }
 
@@ -126,22 +107,20 @@ void Tree::Luka() {
 arg: 0 Node to applied compress function (the root generaly)
 Check for each node the associate node of the current Luka's word in our map
 (_words). If nodes aren't the same, we assign the node in the map to the
-current node. Based on BFS.
+current node. Based on DFS (prefix)
 */
 void Tree::compressAux(std::shared_ptr<Node> &n) {
     if (n == nullptr) {
         return;
     }
 
+    if (n != _words[n->_value]) {
+        n = _words[n->_value];
+    }
+
     compressAux(n->_leftChild);
 
     compressAux(n->_rightChild);
-
-    if (n != _words[n->_value]) {
-        auto tmp = n;
-        n = _words[n->_value];
-        // delete tmp;
-    }
 }
 
 // Calling aux function to avoid problemes on recursion with the reference
@@ -304,7 +283,7 @@ assign the node in the map to the current node. After that, we need to apply
 the deletion rule that say if both childs of a node have the same value
 (then are the same because we replaced them by the associate map value), so
 we could remove it ant link there father to there child Based on BFS.
-*/
+*/ // Find a way to do this prefix
 void Tree::compressionBDDAux(std::shared_ptr<Node> &n,
                              std::shared_ptr<Node> &parent, int from) {
     if (n == nullptr) {
@@ -333,9 +312,7 @@ void Tree::compressionBDDAux(std::shared_ptr<Node> &n,
 
     // compress init
     if (n != _words[n->_value]) {
-        auto tmp = n;
         n = _words[n->_value];
-        // delete tmp;
     }
 }
 
@@ -343,163 +320,19 @@ void Tree::compressionBDDAux(std::shared_ptr<Node> &n,
 // of a class member
 void Tree::CompressionBDD() { compressionBDDAux(_root, _root, NOTHING); }
 
-void Tree::fusionBDDAux(std::shared_ptr<Node> &n,
-                        std::shared_ptr<Node> &toFusionWith,
-                        std::shared_ptr<Node> &fusionNode, std::string &table) {
-    if (n == nullptr) {
-        return;
-    }
-
-    /*RECONSTRUCT MISSING NODES*/
-    if (n->_leftChild != nullptr) {
-        auto current = n;
-        while (current->_leftChild->_value.length() <
-               current->_value.length() / 2) {
-            auto tmp = current->_leftChild;
-            current->_leftChild = newNode(tmp, tmp, tmp->_value + tmp->_value);
-        }
-    }
-    if (n->_rightChild != nullptr) {
-        auto current = n;
-        while (current->_rightChild->_value.length() <
-               current->_value.length() / 2) {
-            auto tmp = current->_rightChild;
-            current->_rightChild = newNode(tmp, tmp, tmp->_value + tmp->_value);
-        }
-    }
-
-    if (toFusionWith->_leftChild != nullptr) {
-        auto current = toFusionWith;
-        while (current->_leftChild->_value.length() <
-               current->_value.length() / 2) {
-            auto tmp = current->_leftChild;
-            current->_leftChild = newNode(tmp, tmp, tmp->_value + tmp->_value);
-        }
-    }
-    if (toFusionWith->_rightChild != nullptr) {
-        auto current = toFusionWith;
-        while (current->_rightChild->_value.length() <
-               current->_value.length() / 2) {
-            auto tmp = current->_rightChild;
-            current->_rightChild = newNode(tmp, tmp, tmp->_value + tmp->_value);
-        }
-    }
-    /*RECONSTRUCT MISSING NODES -- END*/
-
-    if (n->_value.size() == toFusionWith->_value.size()) {
-        fusionNode->_value = n->_value + " | " + toFusionWith->_value;
-    } else if (n->_value.size() < toFusionWith->_value.size()) {
-        n->_value += n->_value;
-        fusionNode->_value = n->_value + " | " + toFusionWith->_value;
-    } else {
-        toFusionWith->_value += toFusionWith->_value;
-        fusionNode->_value = n->_value + " | " + toFusionWith->_value;
-    }
-
-    // process with the table of truth
-    //"0-0,0-1,1-0,1-1"
-    if (table != "") {
-        std::vector<std::string> values;
-        size_t pos = 0;
-
-        while ((pos = fusionNode->_value.find(" | ")) != std::string::npos) {
-            std::string token = "";
-            token = fusionNode->_value.substr(0, pos);
-
-            values.emplace_back(token);
-            fusionNode->_value.erase(0, pos + std::string(" | ").length());
-        }
-        values.emplace_back(fusionNode->_value);
-
-        fusionNode->_value = "";
-        for (size_t i(0); i < values[0].length(); ++i) {
-            if (values[0] == "0" && values[1] == "0") {
-                fusionNode->_value += table[0];
-            } else if (values[0] == "0" && values[1] == "1") {
-                fusionNode->_value += table[1];
-            } else if (values[0] == "1" && values[1] == "0") {
-                fusionNode->_value += table[2];
-            } else if (values[0] == "1" && values[1] == "1") {
-                fusionNode->_value += table[3];
-            }
-        }
-    }
-
-    if (n->_leftChild != nullptr || toFusionWith->_leftChild != nullptr) {
-        fusionNode->_leftChild = newNode(nullptr, nullptr, "");
-        if (n->_leftChild == nullptr) {
-            fusionBDDAux(n, toFusionWith->_leftChild, fusionNode->_leftChild,
-                         table);
-        } else if (toFusionWith->_leftChild == nullptr) {
-            fusionBDDAux(n->_leftChild, toFusionWith, fusionNode->_leftChild,
-                         table);
-        } else {
-            fusionBDDAux(n->_leftChild, toFusionWith->_leftChild,
-                         fusionNode->_leftChild, table);
-        }
-    }
-    if (n->_rightChild != nullptr || toFusionWith->_rightChild != nullptr) {
-        fusionNode->_rightChild = newNode(nullptr, nullptr, "");
-        if (n->_rightChild == nullptr) {
-            fusionBDDAux(n, toFusionWith->_rightChild, fusionNode->_rightChild,
-                         table);
-        } else if (toFusionWith->_rightChild == nullptr) {
-            fusionBDDAux(n->_rightChild, toFusionWith, fusionNode->_rightChild,
-                         table);
-        } else {
-            fusionBDDAux(n->_rightChild, toFusionWith->_rightChild,
-                         fusionNode->_rightChild, table);
-        }
-    }
-}
-//"0-0,0-1,1-0,1-1"
-void Tree::FusionBDD(Tree &toFusionWith, std::string table) {
-    /*uncompressing our trees because we need deletation rules off for an easier
-     * work tree*/
-    // this->UncompressionBDD();
-    // toFusionWith.UncompressionBDD();
-
-    std::shared_ptr<Node> fusionNode = newNode(nullptr, nullptr, "");
-
-    /* IF ROBBD ARE NOT FROM THE SAME SIZE WE RETRIEVE A HEAD THAT HAVE A LENGHT
-     * OF THE OTHER*/
-    while (_root->_value.length() < toFusionWith._root->_value.length()) {
-        auto tmp = _root;
-        _root = newNode(tmp,
-                        newNode(_words["0"], _words["0"],
-                                std::string(tmp->_value.length(), '0')),
-                        tmp->_value + std::string(tmp->_value.length(), '0'));
-    }
-
-    while (toFusionWith._root->_value.length() < _root->_value.length()) {
-        auto tmp = toFusionWith._root;
-        toFusionWith._root =
-            newNode(tmp,
-                    newNode(_words["0"], _words["0"],
-                            std::string(tmp->_value.length(), '0')),
-                    tmp->_value + std::string(tmp->_value.length(), '0'));
-    }
-
-    _words.clear();
-
-    fusionBDDAux(_root, toFusionWith._root, fusionNode, table);
-    _root = fusionNode;
-}
-
+/* arg 0 node to applie the luka words label. Need a different one because this
+ * is in case we got "|"" char */
 void Tree::lukaFusionnedAux(std::shared_ptr<Node> &n) {
     // If we are on leafs
     if (n->_leftChild == nullptr) {
         if (_words.find(n->_value) == _words.end()) {
-            // not found
             _words[n->_value] = n;
         }
         return;
     }
 
     if (_words.find(n->_value) == _words.end()) {
-        // not found
         _words[n->_value] = n;
-        // std::cout << n->_value << std::endl;
     }
 
     lukaFusionnedAux(n->_leftChild);
@@ -507,40 +340,95 @@ void Tree::lukaFusionnedAux(std::shared_ptr<Node> &n) {
     lukaFusionnedAux(n->_rightChild);
 }
 
-void Tree::uncompressionBDDAux(std::shared_ptr<Node> &n) {
-    if (n == nullptr) {
-        return;
+/*Counting the node in the Tree = the number of nodes in map*/
+int Tree::CountNode() { return _words.size(); }
+
+/*
+[Question 5.18] Melds two BDDs and returns the melded BDD.
+Note: recursive and not terminal.
+Aval : depth of A in original tree
+Bval : depth of B in original tree
+*/
+std::shared_ptr<Node> Tree::meldAux(std::shared_ptr<Node> &A,
+                                    std::shared_ptr<Node> &B,
+                                    std::string table) {
+    if (A.get() == nullptr or B.get() == nullptr) {
+        return nullptr;
     }
 
-    if (n->_leftChild != nullptr) {
-        auto current = n;
-        while (current->_leftChild->_value.length() <
-               current->_value.length() / 2) {
-            auto tmp = current->_leftChild;
-            current->_leftChild = newNode(tmp, tmp, tmp->_value + tmp->_value);
+    std::shared_ptr<Node> left = nullptr;
+    std::shared_ptr<Node> right = nullptr;
+    std::string val = "";
+
+    int Aval = A->_value.length();
+    int Bval = B->_value.length();
+
+    int i;
+    if (Aval == Bval) {
+        val = A->_value + " | " + B->_value;
+
+        /* Applying table */
+        if (table != "") {
+            std::vector<std::string> values;
+            size_t pos = 0;
+
+            while ((pos = val.find(" | ")) != std::string::npos) {
+                std::string token = "";
+                token = val.substr(0, pos);
+
+                values.emplace_back(token);
+                val.erase(0, pos + std::string(" | ").length());
+            }
+            values.emplace_back(val);
+
+            val = "";
+            for (size_t i(0); i < values[0].length(); ++i) {
+                if (values[0] == "0" && values[1] == "0") {
+                    val += table[0];
+                } else if (values[0] == "0" && values[1] == "1") {
+                    val += table[1];
+                } else if (values[0] == "1" && values[1] == "0") {
+                    val += table[2];
+                } else if (values[0] == "1" && values[1] == "1") {
+                    val += table[3];
+                }
+            }
         }
-    }
-    if (n->_rightChild != nullptr) {
-        auto current = n;
-        while (current->_rightChild->_value.length() <
-               current->_value.length() / 2) {
-            auto tmp = current->_rightChild;
-            current->_rightChild = newNode(tmp, tmp, tmp->_value + tmp->_value);
+        /* End applying tab*/
+
+        left = meldAux(A->_leftChild, B->_leftChild, table);
+        right = meldAux(A->_rightChild, B->_rightChild, table);
+
+    } else if (Aval > Bval) {
+        int nb = Aval / Bval;
+        // std::cout << "nb: " << nb << std::endl;
+
+        std::string tempB_value = B->_value;
+        for (i = 0; i < nb - 1; i++) {
+            tempB_value += B->_value;
         }
+        val = A->_value + " | " + tempB_value;
+        left = meldAux(A->_leftChild, B, table);
+        right = meldAux(A->_rightChild, B, table);
+    } else if (Bval > Aval) {
+        int nb = Bval / Aval;
+
+        std::string tempA_value = A->_value;
+        for (i = 0; i < nb - 1; i++) {
+            tempA_value += A->_value;
+        }
+        val = tempA_value + " | " + B->_value;
+        left = meldAux(A, B->_leftChild, table);
+        right = meldAux(A, B->_rightChild, table);
     }
-    uncompressionBDDAux(n->_leftChild);
-    uncompressionBDDAux(n->_rightChild);
-}
 
-void Tree::UncompressionBDD() { uncompressionBDDAux(_root); }
-
-int Tree::CountNode() {
-    int n = 0;
-
-    for (const auto &_ : _words) {
-        std::ignore = _;
-        ++n;
-    }
+    std::shared_ptr<Node> n = newNode(left, right, val);
 
     return n;
+}
+
+// Calling Aux
+Tree Tree::Meld(Tree &B, std::string table) {
+    std::shared_ptr<Node> n = meldAux(_root, B._root, table);
+    return Tree(n);
 }

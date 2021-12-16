@@ -21,6 +21,8 @@ class Tree {
    public:
     Tree();
 
+    Tree(std::shared_ptr<Node> &root);
+
     ~Tree();
 
     void ConsArbre(std::string &table);
@@ -37,11 +39,9 @@ class Tree {
 
     void CompressionBDD();
 
-    void FusionBDD(Tree &toFusionWith, std::string table = "");
-
-    void UncompressionBDD();
-
     int CountNode();
+
+    Tree Meld(Tree &B, std::string table = "");
 
    private:
     /****MEMBER VARIABLE****/
@@ -74,10 +74,11 @@ class Tree {
 
     void lukaFusionnedAux(std::shared_ptr<Node> &n);
 
-    void uncompressionBDDAux(std::shared_ptr<Node> &n);
-
     void countNodeAux(std::shared_ptr<Node> &,
                       std::unordered_set<std::shared_ptr<Node>> &marked);
+
+    std::shared_ptr<Node> meldAux(std::shared_ptr<Node> &A,
+                                  std::shared_ptr<Node> &B, std::string table);
 };
 }  // namespace ex2ex3
 

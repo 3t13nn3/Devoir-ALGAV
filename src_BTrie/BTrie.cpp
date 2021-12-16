@@ -1,11 +1,14 @@
 #include "BTrie.hpp"
 
+/* Assign pointer of our tab to nullptr at start */
 BTrie::BTrie() {
     for (int i = 0; i < 2; ++i) {
         _number[i] = nullptr;
     }
 }
 
+/* arg 0 node to insert in the Trie
+We browse the Trie with the word of the node as the key. */
 void BTrie::CheckAndInsert(const std::shared_ptr<Node> &n) {
     // conserve the root
     auto curr = this;
@@ -27,6 +30,8 @@ void BTrie::CheckAndInsert(const std::shared_ptr<Node> &n) {
     }
 }
 
+/* arg 0 word to find (the key here)
+return the node corresponding to the key */
 std::shared_ptr<Node> BTrie::Find(std::string key) {
     auto curr = this;
 
@@ -44,6 +49,7 @@ std::shared_ptr<Node> BTrie::Find(std::string key) {
     return curr->_ptr;
 }
 
+/* arg 0 Trie node used by reccursion */
 void BTrie::getAllValues(BTrie *&t) {
     if (t == nullptr) {
         return;
@@ -79,14 +85,7 @@ void BTrie::Remove(std::string &key) {
     curr->_ptr = nullptr;
 }
 
-void BTrie::RemoveAll() {
-    for (int i = 0; i < 2; ++i) {
-        if (_number[i] != nullptr) {
-            removeAllAux(_number[i]);
-        }
-    }
-}
-
+/* arg 0 Trie node used by reccursion */
 void BTrie::removeAllAux(BTrie *&t) {
     if (t == nullptr) return;
 
@@ -96,4 +95,13 @@ void BTrie::removeAllAux(BTrie *&t) {
     }
 
     delete t;
+}
+
+// Calling aux
+void BTrie::RemoveAll() {
+    for (int i = 0; i < 2; ++i) {
+        if (_number[i] != nullptr) {
+            removeAllAux(_number[i]);
+        }
+    }
 }
