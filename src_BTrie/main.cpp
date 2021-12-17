@@ -177,12 +177,8 @@ int main(int argc, char **argv) {
     tree2.CompressionBDD();
     tree2.Dot("compressed2");
 
-    // Don't use Meld with BTrie without table of truth because we don't hold
-    // '|'
-    ex2ex3::Tree meldedTree = tree1.Meld(tree2, "0001");
-
+    ex2ex3::Tree meldedTree = tree1.Meld(tree2, "0001"); 
     meldedTree.Dot("melded");
-    meldedTree.Luka();
     meldedTree.CompressionBDD();
     meldedTree.Dot("melded_and_compressed");
 

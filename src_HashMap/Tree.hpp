@@ -20,8 +20,6 @@ class Tree {
    public:
     Tree();
 
-    Tree(std::shared_ptr<Node> &root);
-
     void ConsArbre(std::string &table);
 
     void PrintAllChildren();
@@ -65,10 +63,9 @@ class Tree {
     void compressionBDDAux(std::shared_ptr<Node> &n,
                            std::shared_ptr<Node> &parent, int leftChild);
 
-    void lukaFusionnedAux(std::shared_ptr<Node> &n);
-
     std::shared_ptr<Node> meldAux(std::shared_ptr<Node> &A,
-                                  std::shared_ptr<Node> &B, std::string table);
+                                  std::shared_ptr<Node> &B, std::string table,
+                                  Tree &t);
 };
 }  // namespace ex2ex3
 

@@ -7,11 +7,6 @@ Tree::Tree() {
     _words = new BTrie();
 }
 
-Tree::Tree(std::shared_ptr<Node> &root) {
-    _root = root;
-    _words = new BTrie();
-}
-
 Tree::~Tree() { _words->RemoveAll(); }
 
 /*
@@ -94,13 +89,7 @@ void Tree::lukaAux(std::shared_ptr<Node> &n) {
 
 // Calling aux function to avoid problemes on recursion with the reference
 // of a class member
-void Tree::Luka() {
-    if (_root->_value.find("|") != std::string::npos) {
-        lukaFusionnedAux(_root);
-    } else {
-        lukaAux(_root);
-    }
-}
+void Tree::Luka() { lukaAux(_root); }
 
 /*
 arg: 0 Node to applied compress function (the root generaly)
@@ -314,24 +303,6 @@ void Tree::compressionBDDAux(std::shared_ptr<Node> &n,
 // of a class member
 void Tree::CompressionBDD() { compressionBDDAux(_root, _root, NOTHING); }
 
-/* arg 0 node to applie the luka words label. Need a different one because this
- * is in case we got "|"" char */
-void Tree::lukaFusionnedAux(std::shared_ptr<Node> &n) {
-    // If we are on leafs
-    if (n->_leftChild == nullptr) {
-        // adding word to our BTrie
-        _words->CheckAndInsert(n);
-        return;
-    }
-
-    // adding word to our BTrie
-    _words->CheckAndInsert(n);
-
-    lukaFusionnedAux(n->_leftChild);
-
-    lukaFusionnedAux(n->_rightChild);
-}
-
 int Tree::CountNode() {
     std::unordered_set<std::shared_ptr<Node>> marked;
     countNodeAux(_root, marked);
@@ -356,8 +327,8 @@ Aval : depth of A in original tree
 Bval : depth of B in original tree
 */
 std::shared_ptr<Node> Tree::meldAux(std::shared_ptr<Node> &A,
-                                    std::shared_ptr<Node> &B,
-                                    std::string table) {
+                                    std::shared_ptr<Node> &B, std::string table,
+                                    Tree &t) {
     if (A.get() == nullptr or B.get() == nullptr) {
         return nullptr;
     }
@@ -373,37 +344,8 @@ std::shared_ptr<Node> Tree::meldAux(std::shared_ptr<Node> &A,
     if (Aval == Bval) {
         val = A->_value + " | " + B->_value;
 
-        /* Applying table */
-        if (table != "") {
-            std::vector<std::string> values;
-            size_t pos = 0;
-
-            while ((pos = val.find(" | ")) != std::string::npos) {
-                std::string token = "";
-                token = val.substr(0, pos);
-
-                values.emplace_back(token);
-                val.erase(0, pos + std::string(" | ").length());
-            }
-            values.emplace_back(val);
-
-            val = "";
-            for (size_t i(0); i < values[0].length(); ++i) {
-                if (values[0] == "0" && values[1] == "0") {
-                    val += table[0];
-                } else if (values[0] == "0" && values[1] == "1") {
-                    val += table[1];
-                } else if (values[0] == "1" && values[1] == "0") {
-                    val += table[2];
-                } else if (values[0] == "1" && values[1] == "1") {
-                    val += table[3];
-                }
-            }
-        }
-        /* End applying tab*/
-
-        left = meldAux(A->_leftChild, B->_leftChild, table);
-        right = meldAux(A->_rightChild, B->_rightChild, table);
+        left = meldAux(A->_leftChild, B->_leftChild, table, t);
+        right = meldAux(A->_rightChild, B->_rightChild, table, t);
 
     } else if (Aval > Bval) {
         int nb = Aval / Bval;
@@ -414,8 +356,8 @@ std::shared_ptr<Node> Tree::meldAux(std::shared_ptr<Node> &A,
             tempB_value += B->_value;
         }
         val = A->_value + " | " + tempB_value;
-        left = meldAux(A->_leftChild, B, table);
-        right = meldAux(A->_rightChild, B, table);
+        left = meldAux(A->_leftChild, B, table, t);
+        right = meldAux(A->_rightChild, B, table, t);
     } else if (Bval > Aval) {
         int nb = Bval / Aval;
 
@@ -424,17 +366,49 @@ std::shared_ptr<Node> Tree::meldAux(std::shared_ptr<Node> &A,
             tempA_value += A->_value;
         }
         val = tempA_value + " | " + B->_value;
-        left = meldAux(A, B->_leftChild, table);
-        right = meldAux(A, B->_rightChild, table);
+        left = meldAux(A, B->_leftChild, table, t);
+        right = meldAux(A, B->_rightChild, table, t);
     }
 
-    std::shared_ptr<Node> n = newNode(left, right, val);
+    /* Applying table */
+    if (table != "") {
+        std::vector<std::string> values;
+        size_t pos = 0;
 
+        while ((pos = val.find(" | ")) != std::string::npos) {
+            std::string token = "";
+            token = val.substr(0, pos);
+
+            values.emplace_back(token);
+            val.erase(0, pos + std::string(" | ").length());
+        }
+        values.emplace_back(val);
+
+        val = "";
+
+        for (size_t i(0); i < values[0].length(); ++i) {
+            if (values[0][i] == '0' && values[1][i] == '0') {
+                val += table[0];
+            } else if (values[0][i] == '0' && values[1][i] == '1') {
+                val += table[1];
+            } else if (values[0][i] == '1' && values[1][i] == '0') {
+                val += table[2];
+            } else if (values[0][i] == '1' && values[1][i] == '1') {
+                val += table[3];
+            }
+        }
+    }
+    /* End applying tab*/
+
+    std::shared_ptr<Node> n = newNode(left, right, val);
+    // adding word to our BTrie
+    t._words->CheckAndInsert(n);
     return n;
 }
 
 // Calling Aux
 Tree Tree::Meld(Tree &B, std::string table) {
-    std::shared_ptr<Node> n = meldAux(_root, B._root, table);
-    return Tree(n);
+    auto t = Tree();
+    t._root = meldAux(_root, B._root, table, t);
+    return t;
 }

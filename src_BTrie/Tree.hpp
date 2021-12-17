@@ -21,8 +21,6 @@ class Tree {
    public:
     Tree();
 
-    Tree(std::shared_ptr<Node> &root);
-
     ~Tree();
 
     void ConsArbre(std::string &table);
@@ -72,13 +70,12 @@ class Tree {
                       std::shared_ptr<Node> &toFusionWith,
                       std::shared_ptr<Node> &fusionNode, std::string &table);
 
-    void lukaFusionnedAux(std::shared_ptr<Node> &n);
-
     void countNodeAux(std::shared_ptr<Node> &,
                       std::unordered_set<std::shared_ptr<Node>> &marked);
 
     std::shared_ptr<Node> meldAux(std::shared_ptr<Node> &A,
-                                  std::shared_ptr<Node> &B, std::string table);
+                                  std::shared_ptr<Node> &B, std::string table,
+                                  Tree &t);
 };
 }  // namespace ex2ex3
 
